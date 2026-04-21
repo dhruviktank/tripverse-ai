@@ -1,234 +1,160 @@
-"use client";
+import Link from "next/link";
 
-import { FormEvent, useMemo, useState } from "react";
-
-type TripPlan = {
-  trip_description?: string;
-  budget?: string;
-  pace?: string;
-  starting_from?: string;
-  itinerary?: string;
-  context_sources?: number;
-};
-
-type TripApiResponse = {
-  success: boolean;
-  plan?: TripPlan;
-  error?: string;
-  errors?: string[] | null;
-};
+const featureCards = [
+  {
+    title: "AI Smart Itinerary",
+    body: "Real-time route adjustments based on pace, weather, and local context.",
+  },
+  {
+    title: "Smart Planning",
+    body: "Optimize multi-city routing and reduce transfer friction across days.",
+  },
+  {
+    title: "Personalization",
+    body: "From vegan cafes to brutalist architecture, your profile steers every plan.",
+  },
+  {
+    title: "Budget Sync",
+    body: "Track spend and swap activities without sacrificing the overall experience.",
+  },
+];
 
 export default function Home() {
-  const [tripDescription, setTripDescription] = useState("");
-  const [budget, setBudget] = useState("Balanced");
-  const [pace, setPace] = useState("Balanced");
-  const [startingFrom, setStartingFrom] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState<TripApiResponse | null>(null);
-
-  const apiBaseUrl = useMemo(() => {
-    const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    return envUrl && envUrl.trim() ? envUrl.trim() : "http://localhost:8000";
-  }, []);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setResponse(null);
-
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/trips/plan`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          trip_description: tripDescription,
-          budget,
-          pace,
-          starting_from: startingFrom,
-        }),
-      });
-
-      const data = (await res.json()) as TripApiResponse;
-      if (!res.ok) {
-        setResponse({
-          success: false,
-          error: data.error || `Request failed with status ${res.status}`,
-          errors: data.errors || null,
-        });
-      } else {
-        setResponse(data);
-      }
-    } catch (error) {
-      setResponse({
-        success: false,
-        error: error instanceof Error ? error.message : "Unable to connect to backend",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
-    <div className="relative isolate overflow-hidden px-5 py-8 sm:px-10 sm:py-10 lg:px-14">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-[0_20px_60px_-28px_rgba(5,46,37,0.45)] backdrop-blur-md sm:p-10">
-          <p className="mb-4 inline-flex rounded-full bg-[var(--teal-soft)] px-4 py-1 text-xs font-semibold tracking-[0.22em] text-[var(--teal-deep)] uppercase">
-            TravelVerse AI Planner
-          </p>
-          <h1 className="font-display text-4xl leading-tight text-[var(--ink)] sm:text-5xl lg:text-6xl">
-            Plan smarter trips in minutes.
-          </h1>
-          <p className="mt-4 max-w-2xl text-base text-[var(--ink-muted)] sm:text-lg">
-            Share a vibe, budget, and dates. Your AI co-pilot drafts routes,
-            local food stops, and realistic daily pacing so you can just pack
-            and go.
-          </p>
-
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 grid gap-4 rounded-2xl border border-[var(--line)] bg-white/90 p-4 shadow-sm sm:grid-cols-2 sm:p-5"
-          >
-            <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--ink)] sm:col-span-2">
-              What kind of trip are you craving?
-              <input
-                value={tripDescription}
-                onChange={(e) => setTripDescription(e.target.value)}
-                placeholder="Example: 7 days in Japan with anime cafes and nature views"
-                className="h-11 rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--teal-deep)]"
-                required
-              />
-            </label>
-            <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--ink)]">
-              Budget Range
-              <select
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="h-11 rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--teal-deep)]"
-              >
-                <option>Value explorer</option>
-                <option>Balanced</option>
-                <option>Luxury moments</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--ink)]">
-              Pace
-              <select
-                value={pace}
-                onChange={(e) => setPace(e.target.value)}
-                className="h-11 rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--teal-deep)]"
-              >
-                <option>Relaxed</option>
-                <option>Balanced</option>
-                <option>High energy</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--ink)]">
-              Starting From
-              <input
-                value={startingFrom}
-                onChange={(e) => setStartingFrom(e.target.value)}
-                placeholder="Example: New York"
-                className="h-11 rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 text-sm font-medium text-[var(--ink)] outline-none transition focus:border-[var(--teal-deep)]"
-                required
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={loading}
-              className="sm:col-span-2 inline-flex h-12 items-center justify-center rounded-xl bg-[var(--teal-deep)] px-5 text-sm font-semibold tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-[var(--teal-mid)]"
-            >
-              {loading ? "Generating..." : "Generate My First Draft"}
-            </button>
-          </form>
-
-          {response && (
-            <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white/85 p-4 sm:p-5">
-              {response.success && response.plan ? (
-                <div className="space-y-3 text-sm text-[var(--ink)]">
-                  <p className="text-xs font-semibold tracking-[0.18em] text-[var(--ink-muted)] uppercase">
-                    Generated Plan
-                  </p>
-                  <p>
-                    <span className="font-semibold">Route:</span> {response.plan.starting_from} {"->"} {response.plan.trip_description}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Budget:</span> {response.plan.budget} | <span className="font-semibold">Pace:</span> {response.plan.pace}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Context Sources:</span> {response.plan.context_sources ?? 0}
-                  </p>
-                  <div className="rounded-xl border border-[var(--line)] bg-[var(--paper)] p-3 text-[var(--ink-muted)] whitespace-pre-wrap">
-                    {response.plan.itinerary || "No itinerary generated."}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2 text-sm text-red-700">
-                  <p className="font-semibold">Unable to generate plan</p>
-                  <p>{response.error || "Unknown backend error"}</p>
-                  {response.errors && response.errors.length > 0 && (
-                    <ul className="list-disc space-y-1 pl-5">
-                      {response.errors.map((item, idx) => (
-                        <li key={`${item}-${idx}`}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="mt-8 grid gap-3 text-sm sm:grid-cols-3">
-            {[
-              "Adaptive itinerary + map",
-              "Smart budget breakdown",
-              "Food and culture highlights",
-            ].map((item) => (
-              <div
-                key={item}
-                className="rounded-xl border border-[var(--line)] bg-[var(--paper)] px-4 py-3 text-[var(--ink-muted)]"
-              >
-                {item}
-              </div>
-            ))}
+    <div className="relative overflow-hidden bg-[var(--surface)] text-[var(--on-surface)]">
+      <header className="sticky top-0 z-20 border-b border-[var(--outline-variant)]/60 bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-8">
+          <div className="flex items-center gap-8">
+            <p className="font-display text-3xl font-bold text-[var(--primary)]">TripVerse AI</p>
+            <nav className="hidden gap-6 text-sm font-semibold text-[var(--on-surface-variant)] md:flex">
+              <a href="#" className="text-[var(--primary)]">
+                Explore
+              </a>
+              <a href="#">Planner</a>
+              <a href="#">Community</a>
+            </nav>
           </div>
-        </section>
+          <div className="flex items-center gap-3">
+            <button className="rounded-full bg-[var(--surface-container-low)] px-3 py-1 text-xs font-semibold text-[var(--on-surface-variant)]">
+              Alerts
+            </button>
+            <button className="rounded-full bg-[var(--primary)] px-5 py-2 text-sm font-bold text-white">
+              Sign in
+            </button>
+          </div>
+        </div>
+      </header>
 
-        <aside className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-          <article className="rounded-3xl bg-[var(--teal-deep)] p-6 text-white shadow-[0_20px_50px_-26px_rgba(7,72,71,0.65)]">
-            <p className="text-xs tracking-[0.2em] uppercase text-white/70">
-              Active Plan
+      <section className="relative isolate px-4 pb-24 pt-14 sm:px-8 sm:pt-20">
+        <div className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[var(--secondary-container)]/35 blur-3xl" />
+        <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[var(--primary-fixed)] blur-3xl" />
+
+        <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+          <div>
+            <p className="inline-flex rounded-full bg-[var(--secondary-container)]/30 px-4 py-2 text-sm font-semibold text-[var(--on-secondary-container)]">
+              Experience Intelligent Serenity
             </p>
-            <h2 className="mt-3 font-display text-3xl leading-tight">
-              Lisbon + Porto
-            </h2>
-            <p className="mt-2 text-sm text-white/80">
-              6 days, spring weather, food-first route with train connections.
+            <h1 className="mt-6 font-display text-5xl leading-[1.05] sm:text-7xl">
+              Plan your perfect trip with AI.
+            </h1>
+            <p className="mt-5 max-w-xl text-base text-[var(--on-surface-variant)] sm:text-lg">
+              TripVerse crafts personalized itineraries in seconds so you can stop
+              spreadsheet juggling and start anticipating the trip.
             </p>
-            <div className="mt-5 rounded-xl bg-white/14 p-4 text-sm">
-              Day 3 highlights: Alfama walk, Time Out Market, sunset at Miradouro.
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/planner"
+                className="rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-bold text-white transition hover:bg-[var(--primary-container)]"
+              >
+                Start Planning
+              </Link>
+              <Link
+                href="/dashboard"
+                className="rounded-xl border border-[var(--outline-variant)] bg-white px-6 py-3 text-sm font-bold text-[var(--on-surface)]"
+              >
+                View Example App
+              </Link>
             </div>
-          </article>
+          </div>
 
-          <article className="rounded-3xl border border-white/40 bg-white/80 p-6 shadow-[0_16px_45px_-30px_rgba(3,31,45,0.45)] backdrop-blur-md">
-            <p className="text-xs font-semibold tracking-[0.2em] text-[var(--ink-muted)] uppercase">
-              Recent Searches
+          <div className="rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-[0_30px_70px_-34px_rgba(53,37,205,0.55)] backdrop-blur-xl">
+            <div className="h-[360px] rounded-[1.4rem] bg-[linear-gradient(145deg,#fab352,#d9751f)] p-6 text-white sm:h-[430px]">
+              <div className="flex justify-end">
+                <span className="rounded-full bg-white/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                  AI Recommended
+                </span>
+              </div>
+              <div className="mt-44 rounded-2xl bg-white/90 p-4 text-[var(--on-surface)] sm:mt-56">
+                <p className="text-sm font-bold">Amalfi Coast Express</p>
+                <p className="mt-1 text-xs text-[var(--on-surface-variant)]">
+                  7 days | 3 stops | AI optimized
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[var(--surface-container-low)] px-4 py-20 sm:px-8">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="text-center">
+            <h2 className="font-display text-5xl">Travel Smarter, Not Harder</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--on-surface-variant)] sm:text-base">
+              Our AI engine handles complexity while your plan remains clear, editable,
+              and grounded in your preferences.
             </p>
-            <ul className="mt-4 space-y-3 text-sm text-[var(--ink)]">
-              <li className="rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 py-2">
-                Solo culinary weekend in Bangkok
-              </li>
-              <li className="rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 py-2">
-                Family-friendly Italy for 10 days
-              </li>
-              <li className="rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 py-2">
-                Budget Europe rail route in June
-              </li>
-            </ul>
-          </article>
-        </aside>
-      </div>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-12">
+            <article className="rounded-3xl border border-[var(--outline-variant)] bg-white p-6 md:col-span-8">
+              <div className="grid gap-4 sm:grid-cols-[1fr_240px] sm:items-center">
+                <div>
+                  <p className="text-sm font-bold text-[var(--primary)]">AI Smart Itinerary</p>
+                  <p className="mt-2 text-sm text-[var(--on-surface-variant)]">{featureCards[0].body}</p>
+                </div>
+                <div className="h-48 rounded-2xl bg-[linear-gradient(145deg,#7ca7d4,#3d668f)]" />
+              </div>
+            </article>
+
+            <article className="rounded-3xl bg-[var(--primary-container)] p-6 text-white md:col-span-4">
+              <p className="text-sm font-bold">{featureCards[1].title}</p>
+              <p className="mt-3 text-sm text-white/85">{featureCards[1].body}</p>
+              <div className="mt-6 h-20 w-20 rounded-full bg-white/20" />
+            </article>
+
+            <article className="rounded-3xl border border-[var(--outline-variant)] bg-[var(--secondary-container)]/18 p-6 md:col-span-4">
+              <p className="text-sm font-bold text-[var(--on-secondary-container)]">{featureCards[2].title}</p>
+              <p className="mt-3 text-sm text-[var(--on-surface-variant)]">{featureCards[2].body}</p>
+            </article>
+
+            <article className="rounded-3xl border border-[var(--outline-variant)] bg-white p-6 md:col-span-8">
+              <p className="text-sm font-bold">{featureCards[3].title}</p>
+              <p className="mt-3 max-w-2xl text-sm text-[var(--on-surface-variant)]">{featureCards[3].body}</p>
+              <div className="mt-6 flex h-24 w-24 items-center justify-center rounded-full border-8 border-[var(--primary-fixed)] border-t-[var(--primary)] text-sm font-black text-[var(--primary)]">
+                85%
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 py-24 sm:px-8">
+        <div className="mx-auto w-full max-w-4xl rounded-[2rem] border border-white/70 bg-white/80 p-10 text-center shadow-[0_24px_60px_-40px_rgba(53,37,205,0.65)] backdrop-blur-xl">
+          <h3 className="font-display text-4xl">Ready to find your serenity?</h3>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-[var(--on-surface-variant)] sm:text-base">
+            Join 50,000+ travelers using AI-powered planning instead of manual travel spreadsheets.
+          </p>
+          <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
+            <input
+              className="h-12 flex-1 rounded-xl border border-[var(--outline-variant)] bg-white px-4 text-sm outline-none focus:border-[var(--primary)]"
+              placeholder="Enter your email"
+            />
+            <button className="h-12 rounded-xl bg-[var(--primary)] px-6 text-sm font-bold text-white">
+              Get Started
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

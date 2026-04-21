@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TripVerse AI - Itinerary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dcd8e5",
+                        "surface-container-low": "#f5f2ff",
+                        "inverse-on-surface": "#f3effc",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "error": "#ba1a1a",
+                        "primary-container": "#4f46e5",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#00687a",
+                        "surface-container-high": "#eae6f4",
+                        "inverse-surface": "#302f39",
+                        "on-background": "#1b1b24",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-container": "#ffd2be",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-secondary-fixed": "#001f26",
+                        "tertiary-container": "#a44100",
+                        "surface-container": "#f0ecf9",
+                        "on-surface": "#1b1b24",
+                        "tertiary": "#7e3000",
+                        "surface-tint": "#4d44e3",
+                        "surface-bright": "#fcf8ff",
+                        "secondary-container": "#57dffe",
+                        "on-surface-variant": "#464555",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#006172",
+                        "on-tertiary-fixed": "#351000",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "surface-variant": "#e4e1ee",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#acedff",
+                        "surface": "#fcf8ff",
+                        "primary": "#3525cd",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "error-container": "#ffdad6",
+                        "outline": "#777587"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "40px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "margin": "32px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                        "h2": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "h3": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "h1": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #4f46e5 0%, #e4e1ee 100%);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="hidden md:flex flex-col h-screen w-64 border-r fixed left-0 top-0 bg-white dark:bg-gray-950 border-gray-100 dark:border-gray-900 shadow-xl shadow-indigo-900/5 z-[60] p-4 gap-2">
+<div class="flex items-center gap-3 px-2 mb-8">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="travel_explore">travel_explore</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-tight">TripVerse AI</h1>
+<p class="text-[10px] font-medium text-gray-500 uppercase tracking-widest">Intelligent Serenity</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-plus-jakarta text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg font-semibold transition-all duration-200 translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="event_repeat" style="font-variation-settings: 'FILL' 1;">event_repeat</span>
+<span class="font-plus-jakarta text-sm">Itinerary</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-plus-jakarta text-sm">Explore</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-plus-jakarta text-sm">Budget</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-plus-jakarta text-sm">Settings</span>
+</a>
+</nav>
+<button class="mt-auto bg-primary text-white font-plus-jakarta text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+            New Trip
+        </button>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-64 min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm shadow-indigo-500/5 sticky top-0 z-50 flex justify-between items-center px-6 py-3 w-full">
+<div class="flex items-center gap-4">
+<div class="relative max-w-xs hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-900 border-none rounded-full text-xs w-64 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search itinerary..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-gray-500 hover:text-indigo-500 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-gray-500 hover:text-indigo-500 transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-px bg-gray-200 mx-2"></div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-medium text-gray-700 hidden lg:block">Alex Rivera</span>
+<img alt="User profile" class="w-8 h-8 rounded-full border-2 border-primary/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3teqKsc9tl--pmzJNak5MfXzdh-03bdMETcYvh0TSJmIYEdr9ZsLQuGdtcIdH27SWk-nXFLlri1KjUJDw9cbZ5IKiU9TYdBAXZKmiJ_gxuFaWDlyhv8K4X85wsfvo1oxMKRCa6XEsRyCV3Zpw7CZbMQIlRiyVfsfUxxcSptbRsU8a2gBLO-h4Wd_TxjHGPB5SVfBnWmp_0cCd13qoN0pTelmyPNVkuzjbpHFKfocspNvAJUla-oFssebMdRAVRTxjwuUfIVo4PA"/>
+</div>
+</div>
+</header>
+<div class="flex flex-col xl:flex-row p-margin gap-gutter">
+<!-- Left Canvas: Timeline -->
+<div class="flex-1 space-y-md">
+<div class="mb-lg">
+<h2 class="font-h2 text-h2 text-on-background mb-1">Amalfi Coast Adventure</h2>
+<div class="flex items-center gap-4 text-gray-500">
+<span class="flex items-center gap-1 text-label-sm"><span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span> Oct 12 - Oct 18, 2024</span>
+<span class="flex items-center gap-1 text-label-sm"><span class="material-symbols-outlined text-sm" data-icon="person">person</span> 2 Adults</span>
+</div>
+</div>
+<!-- Day 1 Section -->
+<section class="relative timeline-line pb-xl">
+<div class="flex items-center gap-4 mb-8 relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+<span class="font-bold">1</span>
+</div>
+<h3 class="font-h3 text-h3">Day 1: Arrival &amp; Coastal Charm</h3>
+</div>
+<div class="ml-10 space-y-md">
+<!-- Activity Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row">
+<div class="w-full md:w-64 h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="luxury private transfer car driving along a scenic winding coastal road with sparkling blue sea and steep cliffs" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJaULq0P4N2QncBRWs2eQq66p7ZqmiHbXbLYDUY8BiZ7qWUAySpsz8gRf_0ADaRPi33Gf1cro1s1T_IX2gMl6p667oALU9YyXgmBMIO5fQEPLUrjILmJsyJI-NKF7XtZxmYTNh7PDRsGRvUGKw8EQAvmrVMYMP6g6_OyzbEhGr2JNgStyvkOsdRSORa_eDA6INvglP2Up96aks7I1ealCPEgS6WOcQS9yQaerwsg6vvq9ptyOdmP7Wxr4k-pKciVVfZCy_Dmju9Q"/>
+<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+<span class="text-caption font-bold text-primary">09:30 AM</span>
+</div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-body-lg">Private Transfer to Positano</h4>
+<span class="px-2 py-1 bg-cyan-500/10 text-cyan-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Transportation</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">Meet your driver at Naples International Airport for a scenic 90-minute drive to the colorful heart of Positano. Enjoy the breathtaking views of the Tyrrhenian Sea.</p>
+</div>
+<div class="mt-4 flex items-center justify-between border-t border-gray-50 pt-4">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="timer">timer</span> 1.5h</span>
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="euro">euro</span> €120</span>
+</div>
+<button class="text-primary hover:underline text-label-sm font-semibold">View Booking</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row">
+<div class="w-full md:w-64 h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="traditional italian restaurant terrace with lemon trees overlooking a cluster of colorful houses stacked on a cliffside" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAurkWB1uB16PqXZzrbPPev06GYKG0mChPY24D0fiVQZ9uKOnI872NzVg9s1yXSrwT4_fd8armKV74J_l7Y_IRiNz8LC09CLNWDMnNj4RwGeMpkKrHSwLP9pjyvf1BnOWqYUNp1ezdIwqkxLwM641wzqDrn6ZZEMSq6Qry2n83pP0iMq6W5xI4TnPW7wkVXvDmu2ScUSZEF4ZxiuXj_Vo0waLv3WfhUWSugXt7RSadHPdHQVi7RU1MUEPYYZwgEA8x8F-oxmjWiRg"/>
+<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+<span class="text-caption font-bold text-primary">01:00 PM</span>
+</div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-body-lg">Lunch at La Sponda</h4>
+<span class="px-2 py-1 bg-orange-500/10 text-orange-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Dining</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">Authentic Neapolitan cuisine in one of Positano's most legendary dining rooms. Don't miss the local seafood pasta and fresh lemon sorbet.</p>
+</div>
+<div class="mt-4 flex items-center justify-between border-t border-gray-50 pt-4">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="restaurant">restaurant</span> Fine Dining</span>
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span> 4.8</span>
+</div>
+<button class="text-primary hover:underline text-label-sm font-semibold">Reserve Table</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Day 2 Section -->
+<section class="relative timeline-line pb-xl">
+<div class="flex items-center gap-4 mb-8 relative z-10">
+<div class="w-10 h-10 rounded-full bg-white border-2 border-primary-container flex items-center justify-center text-primary-container shadow-sm">
+<span class="font-bold">2</span>
+</div>
+<h3 class="font-h3 text-h3">Day 2: Capri by Sea</h3>
+</div>
+<div class="ml-10 space-y-md">
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row">
+<div class="w-full md:w-64 h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="elegant wooden speed boat cruising on deep blue Mediterranean waters with dramatic rock formations in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYhghloMZXJ4A3IpItZy-T-hxZCRZ64TjT0LnU51UqZd8x-lQ8jlUUORHNmk7Ik6H4tf7j2gwjyLBOGrXUwjwC2WIn8Q-9WQq8omE0j_nKI-8WMex-4dW0TxyqJc-b1rweK-mQ4xpIYAukfmpWVQ977UyLQcTS0dVZFdsQbPOOyeUah5WLs1PHysz16b0ZoJu9NlJ1qVbOMhMautaQFVjX-JuO7TVKCb4HrSqH87Yfwhs52v4yLOODsMbM_yiwIMe5S5NRbAgXfg"/>
+<div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+<span class="text-caption font-bold text-primary">10:00 AM</span>
+</div>
+</div>
+<div class="p-md flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-body-lg">Private Boat Tour to Capri</h4>
+<span class="px-2 py-1 bg-cyan-500/10 text-cyan-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Experience</span>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">A full-day excursion around the island of Capri. Visit the Blue Grotto, sail through the Faraglioni rocks, and stop for swimming in crystal clear coves.</p>
+</div>
+<div class="mt-4 flex items-center justify-between border-t border-gray-50 pt-4">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="directions_boat">directions_boat</span> 6h</span>
+<span class="flex items-center gap-1 text-caption text-gray-400"><span class="material-symbols-outlined text-sm" data-icon="group">group</span> Max 6</span>
+</div>
+<button class="text-primary hover:underline text-label-sm font-semibold">View Details</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Canvas: Trip Overview -->
+<aside class="w-full xl:w-80 space-y-md">
+<div class="sticky top-20 space-y-md">
+<!-- Destination Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="h-32 bg-gray-200 relative">
+<img class="w-full h-full object-cover" data-alt="sweeping panorama of positano amalfi coast with pastel colored houses and sapphire sea at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcM2fBK9zt1M50a2O2p4I0OvlV3B3QvkjPIhNSL-xuglFJScmBzeVIxjYIlBPqMuGlRTk39Q5YZWCRRdsqwaoTOxZKUxQy1dKfzkncX0X7ZmKlvMmsQm1I4tNQbR-gWqH2mkTDPmQ3AemCXilS-gM4qJ1squDPMVqeZK6ytk7jr5JpaLTu_kymfuWJPB2Q-xkvUxE7J8tp6U1B5L6ri4zSYV4cDnsiNuf5pfAOq-48MEmv-cb6XbssiQ4_BoablA9_xSxiOcZmfQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+<div>
+<h4 class="text-white font-bold text-body-lg">Amalfi Coast, Italy</h4>
+<p class="text-white/80 text-caption">Oct 12 - 18</p>
+</div>
+</div>
+</div>
+<div class="p-md space-y-4">
+<!-- Budget Progress -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<span class="text-label-sm font-medium text-gray-600">Budget Spent</span>
+<span class="text-label-sm font-bold text-on-background">€2,450 / €5,000</span>
+</div>
+<div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[49%]"></div>
+</div>
+</div>
+<!-- Weather -->
+<div class="flex items-center justify-between bg-surface-container-low p-3 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-amber-500" data-icon="sunny" style="font-variation-settings: 'FILL' 1;">sunny</span>
+<div>
+<p class="text-label-sm font-bold">24°C</p>
+<p class="text-[10px] text-gray-500 uppercase">Mostly Sunny</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-gray-400">Wind: 12km/h</p>
+<p class="text-[10px] text-gray-400">Humidity: 45%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Actions -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-md space-y-3">
+<h5 class="text-label-sm font-bold text-gray-500 uppercase tracking-widest mb-2">Itinerary Tools</h5>
+<button class="w-full flex items-center justify-between p-3 bg-primary-container/10 text-primary-container rounded-lg hover:bg-primary-container/20 transition-colors group">
+<span class="flex items-center gap-3 font-semibold text-label-sm">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                                Regenerate Day
+                            </span>
+<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 border border-gray-100 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors group">
+<span class="flex items-center gap-3 font-semibold text-label-sm">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                                Add Activity
+                            </span>
+<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-3 border border-gray-100 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors group">
+<span class="flex items-center gap-3 font-semibold text-label-sm">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf">picture_as_pdf</span>
+                                Export PDF
+                            </span>
+<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Small Map Widget -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="h-40 bg-gray-200" data-location="Amalfi Coast" style="">
+<img class="w-full h-full object-cover" data-alt="stylized map view of the amalfi coast with pins on positano amalfi and capri icons for travel markers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCbfZDyZ9xU93Jzbtp93H9RlDlfsPiwabj85pmQeGPbTbrqiWZxg8EYSpo6KlKQ5sQdovp_8WTZVrERju9PTrMjhhANba8VilcImcvsHJ2iH64qTJjvOOaESJn-tWSaPWMdVkIUav8j51ys02FibYGmpJs8qmg0a9x6g92AwLw-uLYgTFmA7Qh1uJo6rydIdVtcAXXeC1FFLPnrSR4xE-UgoJ4eximB5iyZM2qG_FSnDFzZTOn_bpwPlCc6XvnNNZp8-echiRNqA"/>
+</div>
+<div class="p-3">
+<button class="w-full py-2 bg-gray-900 text-white rounded-lg text-label-sm font-bold">Open Interactive Map</button>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center py-3 z-[60] shadow-2xl">
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px]">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="event_repeat" style="font-variation-settings: 'FILL' 1;">event_repeat</span>
+<span class="text-[10px] font-bold">Trip</span>
+</button>
+<button class="w-12 h-12 -mt-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="text-[10px]">Explore</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px]">Profile</span>
+</button>
+</nav>
+</body></html>

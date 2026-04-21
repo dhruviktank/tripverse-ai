@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .neumorphic-button {
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#3323cc",
+                        "secondary-container": "#57dffe",
+                        "inverse-surface": "#302f39",
+                        "on-secondary-fixed": "#001f26",
+                        "tertiary-container": "#a44100",
+                        "on-surface-variant": "#464555",
+                        "outline-variant": "#c7c4d8",
+                        "tertiary": "#7e3000",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f3effc",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-bright": "#fcf8ff",
+                        "on-background": "#1b1b24",
+                        "surface-container": "#f0ecf9",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dcd8e5",
+                        "on-secondary": "#ffffff",
+                        "outline": "#777587",
+                        "on-secondary-container": "#006172",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ffd2be",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e4e1ee",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-tint": "#4d44e3",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-error-container": "#93000a",
+                        "surface": "#fcf8ff",
+                        "secondary": "#00687a",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-low": "#f5f2ff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-primary-container": "#dad7ff",
+                        "on-surface": "#1b1b24",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "primary": "#3525cd",
+                        "background": "#fcf8ff",
+                        "secondary-fixed": "#acedff",
+                        "primary-container": "#4f46e5",
+                        "on-primary-fixed": "#0f0069"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin": "32px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "lg": "40px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "body-md": ["Inter"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "h3": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "h2": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "h1": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen sticky left-0 top-0 w-64 flex-shrink-0 border-r border-indigo-50 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur-2xl shadow-[4px_0_24px_rgba(79,70,229,0.04)] z-50 flex flex-col p-4 space-y-2">
+<div class="mb-base p-2">
+<h1 class="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-h1">TripVerse</h1>
+<p class="text-xs text-gray-500 uppercase tracking-widest font-caption">AI Assistant</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-indigo-600 transition-transform duration-300 hover:translate-x-1 font-label-sm" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200 rounded-xl font-bold transition-transform duration-300 hover:translate-x-1 font-label-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+<span>My Trips</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-indigo-600 transition-transform duration-300 hover:translate-x-1 font-label-sm" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>AI Planner</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-indigo-600 transition-transform duration-300 hover:translate-x-1 font-label-sm" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-indigo-600 transition-transform duration-300 hover:translate-x-1 font-label-sm" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span>Favorites</span>
+</a>
+</nav>
+<button class="w-full py-4 px-4 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all font-label-sm mb-lg">
+<span class="material-symbols-outlined">add</span>
+                Plan New Trip
+            </button>
+<div class="pt-4 border-t border-indigo-50 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-gray-500 hover:text-indigo-600 transition-all font-label-sm" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 text-gray-500 hover:text-indigo-600 transition-all font-label-sm" href="#">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar -->
+<header class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-indigo-100/50 dark:border-gray-800 shadow-sm shadow-indigo-500/5 docked full-width top-0 sticky z-40 flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-md">
+<div class="bg-indigo-50 p-2 rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-indigo-600">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-['Plus_Jakarta_Sans'] w-64" placeholder="Search itinerary..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-gray-500 hover:bg-indigo-50 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-gray-500 hover:bg-indigo-50 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 overflow-hidden cursor-pointer active:scale-95 transition-all">
+<img alt="User avatar" data-alt="close-up portrait of a friendly professional man with a neat beard in a bright modern studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF1ydzDptJfv-eef4R5cPgKPW1o5e2a51bPMCdOxV5A33suSJgFq83tGr4yygbmeHFoWpZN88xAb4xyoY9zEJNHTc9o6hApJsoxpsUdfK-Tjb_zWdMF-dLWUfDj6_BSLj0Dl9UGrSZ1MZb623ZkAi77-NHxrU4SY7QJOeumSyPWF06urQ4ezmtBMQc5o7m-0wsQoEoxdbeZVoaBRw2-JShj3PK23JJYe2eoy-zfsCQSo7cILGzRcSwv-Cajp0fAEYMwo7m2nHvVg"/>
+</div>
+</div>
+</header>
+<!-- Content Body -->
+<div class="flex-1 overflow-y-auto px-margin py-lg max-w-7xl mx-auto w-full">
+<!-- Hero Header -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-md mb-xl">
+<div>
+<div class="flex items-center gap-2 mb-xs">
+<span class="text-secondary font-bold text-sm tracking-widest uppercase font-caption">Current Plan</span>
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<h2 class="font-h1 text-h1 text-on-surface mb-2">Santorini Dream Escape</h2>
+<div class="flex items-center gap-base text-gray-500 font-body-md">
+<span class="material-symbols-outlined text-indigo-500">calendar_today</span>
+<span>Sept 12 - Sept 18, 2024</span>
+<span class="mx-2">•</span>
+<span class="material-symbols-outlined text-indigo-500">location_on</span>
+<span>Oia, Greece</span>
+</div>
+</div>
+<div class="flex gap-base">
+<button class="neumorphic-button bg-white text-on-surface-variant px-md py-sm rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-50 transition-all active:scale-95 border border-indigo-50 font-label-sm">
+<span class="material-symbols-outlined">refresh</span>
+                            Regenerate
+                        </button>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95 font-label-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                            Save Trip
+                        </button>
+</div>
+</div>
+<!-- Itinerary Grid -->
+<div class="space-y-xl">
+<!-- Day 1 Card -->
+<section class="group">
+<div class="flex items-center gap-md mb-md">
+<div class="h-12 w-12 rounded-2xl bg-primary text-on-primary flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/10">01</div>
+<div>
+<h3 class="font-h3 text-h3">Arrival &amp; Sunset Magic</h3>
+<p class="text-gray-500 font-body-md">Settling into the volcanic paradise</p>
+</div>
+<button class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-2 text-indigo-400 hover:bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Main Activity Timeline -->
+<div class="md:col-span-8 space-y-gutter">
+<div class="bg-white rounded-xl shadow-[0_12px_24px_rgba(79,70,229,0.04)] border border-indigo-50 overflow-hidden transition-all hover:shadow-lg">
+<div class="h-48 w-full relative">
+<img class="w-full h-full object-cover" data-alt="stunning wide shot of iconic white-washed buildings with blue domes in Oia Santorini at midday with deep blue Aegean sea background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwcL6BuR3owTjDvPltH5lpSbe4PNgqnE-oXhaMrIbz8x4sC0UCwKS8NJXluilYCJ0u49MoMj4dqCHpiNi4_Bk4lJ71B8YL4yl06eCAbqwuOYnSnd6bbvvLNeOjyoKOMyPRFFJuAh-kaCpPHInhx06TcfzBkn1qZlNSaj3DcLxfVhKy61hYtjMhqc7fxZtdZXNm3IT94Xvu9i1_4NxsI-A4w7OZiqrSpdGfM_7RkMYmu8t_MXl6BoseU98c7bi58DxHQ0UyRJfkdw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+<div class="absolute bottom-4 left-6 flex gap-2">
+<span class="bg-secondary-container/90 backdrop-blur-md text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-caption">Must See</span>
+</div>
+</div>
+<div class="p-md space-y-md">
+<!-- Timeline Item -->
+<div class="flex gap-md border-l-2 border-indigo-100 pl-6 relative">
+<div class="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-indigo-600 font-bold text-xs uppercase font-caption">14:00 • Check-in</span>
+<h4 class="font-h3 text-lg mb-1">Celestial Suites Resort</h4>
+</div>
+<button class="p-1 text-gray-300 hover:text-indigo-500 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<p class="text-gray-500 font-body-md">Luxury suite check-in with panoramic caldera views. Complimentary welcome drink on arrival.</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="flex gap-md border-l-2 border-indigo-100 pl-6 relative">
+<div class="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-indigo-600 font-bold text-xs uppercase font-caption">17:30 • Experience</span>
+<h4 class="font-h3 text-lg mb-1">Oia Castle Sunset Path</h4>
+</div>
+<button class="p-1 text-gray-300 hover:text-indigo-500 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<p class="text-gray-500 font-body-md">Wander through the narrow marble alleys toward the ruins of the Byzantine castle for the world's most famous sunset.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Suggestions -->
+<div class="md:col-span-4 space-y-gutter">
+<!-- Food Suggestion -->
+<div class="bg-indigo-50/50 rounded-xl p-md border border-indigo-100/50">
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-indigo-600">restaurant</span>
+<h4 class="font-h3 text-md uppercase tracking-wider text-indigo-900 font-caption">Culinary Picks</h4>
+</div>
+<div class="space-y-md">
+<div class="flex gap-base group">
+<div class="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="fresh greek salad with feta cheese olives and red onions served in a traditional ceramic bowl on a wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOeWIto002NzqF95nvRia2bLHMvPxPonAf2QPKLs6wznIohiXBH570oHfHih0tu2UpkO_oSrL_GPBw-lQJC-1xzoXgMFZvKbg7fRY6seTydSKsdZNCjrOwF8sF4YRo9X1w0F75QHaT23VoJf2jg_Ccy9Fyu_tx7yQefar_XYEHnt4Wox6hTj3DkqnrT2VSm9Y9miKB_21YPi9KEoa5lQae_Ud33tlvzMl85XHstB90D4YlhjnewgiglJ686E9vTZVceYJ9vri3UA"/>
+</div>
+<div class="flex-1">
+<h5 class="font-bold text-sm">Sunset Ammoudi Taverna</h5>
+<p class="text-xs text-gray-500">Fresh seafood at the water's edge. Order the sun-dried octopus.</p>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-sm">edit</span></button>
+</div>
+</div>
+</div>
+<!-- AI Notes -->
+<div class="glass-panel rounded-xl p-md border border-secondary-container/30">
+<div class="flex items-center gap-2 mb-base">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h4 class="font-bold text-sm text-secondary">Planner Notes</h4>
+</div>
+<p class="text-sm text-on-surface-variant italic">"Book the taverna at least 2 days in advance. Request a table by the railing for the best view."</p>
+<div class="mt-md flex flex-wrap gap-xs">
+<span class="bg-cyan-500/10 text-cyan-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">Romantic</span>
+<span class="bg-cyan-500/10 text-cyan-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">Photography</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Day 2 Card -->
+<section class="group">
+<div class="flex items-center gap-md mb-md">
+<div class="h-12 w-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold text-xl">02</div>
+<div>
+<h3 class="font-h3 text-h3">Volcanic Odyssey</h3>
+<p class="text-gray-500 font-body-md">Exploring the caldera's hidden depths</p>
+</div>
+<button class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-2 text-indigo-400 hover:bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-8 space-y-gutter">
+<div class="bg-white rounded-xl shadow-[0_12px_24px_rgba(79,70,229,0.04)] border border-indigo-50 overflow-hidden transition-all hover:shadow-lg">
+<div class="h-48 w-full relative">
+<img class="w-full h-full object-cover" data-alt="luxury catamaran sailing on clear turquoise waters near black volcanic cliffs in Santorini under a bright blue sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3L4soxW4yhnoYvzQKOj7ek_jK1D-3pX62HbYJHGDwyR8KIOfryii9UKf6LNHijeIszG3ewSAGAA1HKd0nJ3crscGlbZa2rqW9THhjMALTiF2XS_DJgCdCJoUArSm0mgMhr82xkA7URd0ki8tbGrzm8wr-KrBfoUuWz8k1JLzO7MRkyOAbhcJZv_5FKQ_-DOn-Cf6f9ZmOdpmrltThrOQtBUl1noIYM2TAjFhO04PnVRvMdXKSca3muT42XaHHJczScF2UfE52Qw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+<div class="absolute bottom-4 left-6 flex gap-2">
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-caption">Outdoor Adventure</span>
+</div>
+</div>
+<div class="p-md space-y-md">
+<div class="flex gap-md border-l-2 border-indigo-100 pl-6 relative">
+<div class="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-indigo-500 ring-4 ring-white"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-indigo-600 font-bold text-xs uppercase font-caption">10:00 • Activity</span>
+<h4 class="font-h3 text-lg mb-1">Caldera Catamaran Cruise</h4>
+</div>
+<button class="p-1 text-gray-300 hover:text-indigo-500 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<p class="text-gray-500 font-body-md">Swim in the Red and White beaches, soak in the Hot Springs, and enjoy a fresh BBQ lunch on board.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-4">
+<div class="bg-white rounded-xl overflow-hidden border border-indigo-50 h-full flex flex-col">
+<div class="h-40 bg-indigo-50 flex items-center justify-center relative">
+<span class="material-symbols-outlined text-indigo-200 text-6xl">map</span>
+<img class="w-full h-full object-cover opacity-60 mix-blend-overlay" data-alt="minimalist overhead map view of an island coastline with simple path markers and icons for landmarks" data-location="Santorini" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfd7qKEo0dYMPTAdv5H2mDvXwCSDD5g8M7NmIeX0sXDJ-3Z-cnHDKcFmCeIghykja99bTYxya3skY4wEO5nyD8mtNXFroeptblG_GiXQGueJLlK-53FVKblVYGHo9z93bXcFum9-ujpgMAKj86HE70vyegapI_fHr5C-NhWqbf79jQ75CluyeTyAGwP1ETAhJuH4FS3U2tsiv42S_AMCBRU80MPx05Y7GyEcBbP7p3iMRdjP4oRRfLy7BK4_1BPaZhT6CiDkkYIg"/>
+<div class="absolute bottom-4 right-4">
+<button class="bg-white text-indigo-600 p-2 rounded-full shadow-md active:scale-95 transition-all">
+<span class="material-symbols-outlined">fullscreen</span>
+</button>
+</div>
+</div>
+<div class="p-md flex-1">
+<h4 class="font-bold text-sm mb-base">Route Preview</h4>
+<p class="text-xs text-gray-500 leading-relaxed">Estimated travel time: 45m boat ride. Total distance covered: 12 nautical miles.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- AI Float Chat Trigger (FAB) -->
+<button class="fixed bottom-margin right-margin h-14 w-14 bg-indigo-600 text-white rounded-full shadow-2xl shadow-indigo-600/40 flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+<!-- Footer -->
+<footer class="w-full py-16 px-8 mt-auto bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2">
+<span class="font-bold text-gray-900 dark:text-white font-h3">TripVerse AI</span>
+<p class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-gray-500">© 2024 TripVerse AI. Intelligent Serenity in Travel.</p>
+</div>
+<div class="flex gap-lg">
+<a class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-gray-500 hover:text-indigo-500 transition-colors" href="#">Features</a>
+<a class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-gray-500 hover:text-indigo-500 transition-colors" href="#">Pricing</a>
+<a class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-gray-500 hover:text-indigo-500 transition-colors" href="#">Community</a>
+<a class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-gray-500 hover:text-indigo-500 transition-colors" href="#">Privacy</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+</body></html>
