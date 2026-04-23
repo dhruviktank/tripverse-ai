@@ -16,3 +16,8 @@ httpx
 aiohttp
 requests
 python-multipart
+sqlalchemy[asyncio]
+asyncpg
+passlib[bcrypt]
+bcrypt
+python-jose[cryptography]

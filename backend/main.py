@@ -1,5 +1,6 @@
 """FastAPI backend server for TripVerse AI."""
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,18 +8,34 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from config import get_settings
 from orchestrator import get_trip_planning_orchestrator
+from auth_routes import router as auth_router
+from trip_routes import router as trip_router, dashboard_router
+from database import create_tables
 import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Lifespan handler for startup/shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create database tables on startup."""
+    try:
+        logger.info("Creating database tables...")
+        await create_tables()
+        logger.info("Database tables created successfully.")
+    except Exception as e:
+        logger.warning(f"Could not create tables on startup (will retry on first request): {e}")
+    yield
+
 # Initialize app
 settings = get_settings()
 app = FastAPI(
     title=settings.api_title,
     description=settings.api_description,
-    version=settings.api_version
+    version=settings.api_version,
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -30,6 +47,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include auth router
+app.include_router(auth_router)
+app.include_router(trip_router)
+app.include_router(dashboard_router)
 
 # Pydantic models
 class TripPlanRequest(BaseModel):
