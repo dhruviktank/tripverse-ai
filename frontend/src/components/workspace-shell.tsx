@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 type ShellProps = {
   children: ReactNode;
@@ -28,13 +29,25 @@ function isActivePath(pathname: string, href: string) {
 
 export function WorkspaceShell({ children }: ShellProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+
+  const initials = user?.full_name
+    ? user.full_name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "??";
 
   return (
     <div className="min-h-screen bg-[var(--surface)] text-[var(--on-surface)] md:grid md:grid-cols-[248px_1fr]">
       <aside className="hidden border-r border-[var(--outline-variant)]/60 bg-white/85 backdrop-blur-xl md:flex md:flex-col">
         <div className="px-6 pb-6 pt-7">
           <Link href="/" className="block">
-            <p className="font-display text-3xl font-bold text-[var(--primary)]">TripVerse</p>
+            <p className="font-display text-3xl font-bold text-[var(--primary)]">
+              TripVerse
+            </p>
             <p className="mt-1 text-[11px] font-semibold tracking-[0.2em] text-[var(--on-surface-variant)] uppercase">
               AI Assistant
             </p>
@@ -89,14 +102,27 @@ export function WorkspaceShell({ children }: ShellProps) {
               />
             </div>
             <div className="flex items-center gap-3 sm:ml-auto">
-              <button className="rounded-full bg-[var(--surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--on-surface-variant)]">
-                Alerts
+              <div className="hidden items-center gap-2 sm:flex">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[var(--on-surface)]">
+                    {user?.full_name || "Traveler"}
+                  </p>
+                  <p className="text-xs text-[var(--on-surface-variant)]">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={logout}
+                className="rounded-full bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+              >
+                Logout
               </button>
-              <button className="rounded-full bg-[var(--surface-container-low)] px-3 py-2 text-xs font-semibold text-[var(--on-surface-variant)]">
-                Settings
-              </button>
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--secondary-fixed)] text-xs font-bold text-[var(--on-secondary-fixed)]">
-                AR
+              <div
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--secondary-fixed)] text-xs font-bold text-[var(--on-secondary-fixed)]"
+                title={user?.full_name || "User"}
+              >
+                {initials}
               </div>
             </div>
           </div>

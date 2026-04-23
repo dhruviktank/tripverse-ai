@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 @import "tailwindcss";
 
 :root {
@@ -67,4 +68,19 @@ form {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(228, 225, 238, 0.5);
+}
+
+.neumorphic-input {
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+
+.neumorphic-input:focus {
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
