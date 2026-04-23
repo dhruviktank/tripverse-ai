@@ -1,130 +1,234 @@
-const timeline = [
-  {
-    day: "01",
-    title: "Arrival & Sunset Magic",
-    subtitle: "Settling into the volcanic paradise",
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { tripApi, type TripData } from "@/lib/api";
+
+interface TimelineDay {
+  day: string;
+  title: string;
+  items: Array<{
+    time: string;
+    type: string;
+    name: string;
+    details: string;
+  }>;
+}
+
+function parseItineraryToTimeline(itineraryText: string | null): TimelineDay[] {
+  if (!itineraryText) return [];
+
+  // Simple parsing: extract day sections from markdown
+  const dayRegex = /\*{0,2}Day\s+(\d+):\s*([^\n]+)\*{0,2}/gi;
+  const matches = [...itineraryText.matchAll(dayRegex)];
+
+  return matches.map((match) => ({
+    day: String(parseInt(match[1])).padStart(2, "0"),
+    title: match[2],
     items: [
       {
-        time: "14:00",
-        type: "Check-in",
-        name: "Celestial Suites Resort",
-        details: "Luxury suite check-in with panoramic caldera views.",
-      },
-      {
-        time: "17:30",
-        type: "Experience",
-        name: "Oia Castle Sunset Path",
-        details: "Marble alley walk and sunset viewpoints over the caldera.",
-      },
-    ],
-  },
-  {
-    day: "02",
-    title: "Volcanic Odyssey",
-    subtitle: "Exploring the caldera by sea",
-    items: [
-      {
-        time: "10:00",
+        time: "Full Day",
         type: "Activity",
-        name: "Caldera Catamaran Cruise",
-        details: "Swim stops, hot springs, and a relaxed island lunch route.",
+        name: "Planned itinerary",
+        details: "See full details in itinerary view",
       },
     ],
-  },
-];
+  }));
+}
 
 export default function TripsPage() {
+  const { user } = useAuth();
+  const [activeTrip, setActiveTrip] = useState<TripData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [timeline, setTimeline] = useState<TimelineDay[]>([]);
+
+  useEffect(() => {
+    async function loadActiveTrip() {
+      try {
+        const data = await tripApi.list("upcoming");
+        if (data.trips.length > 0) {
+          const trip = data.trips[0];
+          setActiveTrip(trip);
+          setTimeline(parseItineraryToTimeline(trip.itinerary_text));
+        } else {
+          setError("No upcoming trips found. Create one to see it here!");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load trips");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadActiveTrip();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 rounded-full border-4 border-[var(--primary)] border-t-transparent animate-spin" />
+          <p className="mt-4 text-sm text-[var(--on-surface-variant)]">
+            Loading your trips...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !activeTrip) {
+    return (
+      <div className="rounded-3xl border border-dashed border-[var(--outline-variant)] bg-[var(--surface-container-low)] px-6 py-16 text-center">
+        <p className="font-display text-3xl text-[var(--primary)]">
+          No upcoming trips
+        </p>
+        <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
+          {error ||
+            "Your upcoming trips will appear here. Create one to get started!"}
+        </p>
+        <Link
+          href="/planner"
+          className="mt-6 inline-block rounded-xl bg-[var(--primary)] px-6 py-3 text-sm font-bold text-white transition hover:bg-[var(--primary-container)]"
+        >
+          Plan a Trip
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8">
+      {/* Header */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-bold tracking-[0.16em] text-[var(--secondary)] uppercase">
             Current Plan
           </p>
-          <h1 className="mt-2 font-display text-5xl">Santorini Dream Escape</h1>
+          <h1 className="mt-2 font-display text-5xl text-[var(--on-surface)]">
+            {activeTrip.title}
+          </h1>
           <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
-            Sept 12 - Sept 18, 2024 | Oia, Greece
+            {activeTrip.starting_from}
+            {activeTrip.dates && ` | ${activeTrip.dates}`}
+            {activeTrip.travelers &&
+              ` | ${activeTrip.travelers} traveler${activeTrip.travelers !== 1 ? "s" : ""}`}
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="rounded-xl border border-[var(--outline-variant)] bg-white px-5 py-3 text-sm font-semibold">
-            Regenerate
-          </button>
-          <button className="rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-bold text-white">
-            Save Trip
-          </button>
+          <Link
+            href={`/itinerary/${activeTrip.id}`}
+            className="rounded-xl border border-[var(--outline-variant)] bg-white px-5 py-3 text-sm font-semibold text-[var(--on-surface)] transition hover:bg-[var(--surface-container-low)]"
+          >
+            Full Itinerary
+          </Link>
+          <Link
+            href="/history"
+            className="rounded-xl bg-[var(--primary)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--primary-container)]"
+          >
+            View All Trips
+          </Link>
         </div>
       </header>
 
-      <div className="space-y-8">
-        {timeline.map((day, i) => (
-          <section key={day.day} className="grid gap-5 lg:grid-cols-[1fr_280px]">
-            <div>
-              <div className="mb-4 flex items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--primary)] text-lg font-bold text-white">
-                  {day.day}
-                </span>
-                <div>
-                  <h2 className="text-3xl font-bold text-[var(--on-surface)]">{day.title}</h2>
-                  <p className="text-sm text-[var(--on-surface-variant)]">{day.subtitle}</p>
+      {/* Timeline */}
+      {timeline.length > 0 ? (
+        <div className="space-y-8">
+          {timeline.map((day, i) => (
+            <section
+              key={day.day}
+              className="grid gap-5 lg:grid-cols-[1fr_280px]"
+            >
+              <div>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--primary)] text-lg font-bold text-white">
+                    {day.day}
+                  </span>
+                  <div>
+                    <h2 className="text-3xl font-bold text-[var(--on-surface)]">
+                      {day.title}
+                    </h2>
+                  </div>
                 </div>
+
+                <article className="overflow-hidden rounded-3xl border border-[var(--outline-variant)] bg-white shadow-[0_15px_40px_-30px_rgba(53,37,205,0.45)]">
+                  <div
+                    className="h-48"
+                    style={{
+                      background:
+                        i === 0
+                          ? "linear-gradient(135deg,#5fb3ff,#1f69cb)"
+                          : i === 1
+                            ? "linear-gradient(135deg,#4999d3,#2f6aa8)"
+                            : "linear-gradient(135deg,#3d7a9e,#2a5680)",
+                    }}
+                  />
+                  <div className="space-y-5 p-5">
+                    {day.items.map((item) => (
+                      <div
+                        key={`${item.time}-${item.name}`}
+                        className="border-l-2 border-[var(--primary-fixed)] pl-4"
+                      >
+                        <p className="text-xs font-bold tracking-wide text-[var(--primary)] uppercase">
+                          {item.time} | {item.type}
+                        </p>
+                        <h3 className="mt-1 text-xl font-semibold text-[var(--on-surface)]">
+                          {item.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+                          {item.details}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </article>
               </div>
 
-              <article className="overflow-hidden rounded-3xl border border-[var(--outline-variant)] bg-white shadow-[0_15px_40px_-30px_rgba(53,37,205,0.45)]">
-                <div
-                  className="h-48"
-                  style={{
-                    background:
-                      i === 0
-                        ? "linear-gradient(135deg,#5fb3ff,#1f69cb)"
-                        : "linear-gradient(135deg,#4999d3,#2f6aa8)",
-                  }}
-                />
-                <div className="space-y-5 p-5">
-                  {day.items.map((item) => (
-                    <div key={`${item.time}-${item.name}`} className="border-l-2 border-[var(--primary-fixed)] pl-4">
-                      <p className="text-xs font-bold tracking-wide text-[var(--primary)] uppercase">
-                        {item.time} | {item.type}
+              <aside className="space-y-4">
+                <article className="rounded-2xl border border-[var(--outline-variant)] bg-white p-4">
+                  <p className="text-xs font-bold tracking-wide text-[var(--primary)] uppercase">
+                    Trip Info
+                  </p>
+                  <div className="mt-3 space-y-2 text-sm">
+                    <div>
+                      <p className="text-[11px] text-[var(--on-surface-variant)]">
+                        Budget Type
                       </p>
-                      <h3 className="mt-1 text-xl font-semibold">{item.name}</h3>
-                      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">{item.details}</p>
+                      <p className="font-semibold text-[var(--on-surface)] capitalize">
+                        {activeTrip.budget}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </article>
-            </div>
-
-            <aside className="space-y-4">
-              <article className="rounded-2xl border border-[var(--outline-variant)] bg-white p-4">
-                <p className="text-xs font-bold tracking-wide text-[var(--primary)] uppercase">
-                  Culinary Picks
-                </p>
-                <h4 className="mt-2 text-lg font-bold">Sunset Ammoudi Tavern</h4>
-                <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
-                  Fresh seafood after the water edge walk, ideal for sunset timing.
-                </p>
-              </article>
-
-              <article className="rounded-2xl border border-[var(--outline-variant)] bg-white p-4">
-                <p className="text-xs font-bold tracking-wide text-[var(--secondary)] uppercase">
-                  Planner Notes
-                </p>
-                <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
-                  Book table reservations two days in advance. Request a rail-side
-                  seat for evening segments.
-                </p>
-              </article>
-
-              <article className="h-44 rounded-2xl border border-[var(--outline-variant)] bg-[var(--surface-container-low)] p-4">
-                <p className="text-xs font-bold tracking-wide text-[var(--primary)] uppercase">Route Preview</p>
-                <p className="mt-2 text-sm text-[var(--on-surface-variant)]">
-                  Estimated travel time 45m by boat. Total route distance 12 nautical miles.
-                </p>
-              </article>
-            </aside>
-          </section>
-        ))}
-      </div>
+                    <div>
+                      <p className="text-[11px] text-[var(--on-surface-variant)]">
+                        Pace
+                      </p>
+                      <p className="font-semibold text-[var(--on-surface)] capitalize">
+                        {activeTrip.pace}
+                      </p>
+                    </div>
+                    {activeTrip.budget_total && (
+                      <div>
+                        <p className="text-[11px] text-[var(--on-surface-variant)]">
+                          Budget Total
+                        </p>
+                        <p className="font-semibold text-[var(--primary)]">
+                          ${activeTrip.budget_total}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              </aside>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-[var(--outline-variant)] bg-[var(--surface-container-low)] p-6 text-center">
+          <p className="text-sm text-[var(--on-surface-variant)]">
+            Itinerary timeline will appear here once trip details are loaded.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
