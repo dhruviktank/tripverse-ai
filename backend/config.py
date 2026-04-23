@@ -39,6 +39,14 @@ class Settings(BaseSettings):
     search_results_count: int = 5
     max_article_chars: int = 4000
     
+    # Database Configuration (Neon Postgres)
+    database_url: str = ""
+
+    # JWT Authentication Configuration
+    jwt_secret_key: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expiry_minutes: int = 1440  # 24 hours
+
     # Application Configuration
     max_retries: int = 5
     request_timeout: int = 120
