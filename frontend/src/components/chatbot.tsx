@@ -9,12 +9,24 @@ type Message = {
   timestamp: Date;
 };
 
+type ConversationContext = {
+  source?: string | null;
+  destinations?: string[];
+  preferences?: string[];
+  budget?: string | null;
+  pace?: string | null;
+  duration_days?: number | null;
+  trip_description?: string | null;
+};
+
 const SUGGESTIONS = [
   "Best time to visit Bali?",
   "Budget tips for Europe?",
   "Hidden gems in Japan?",
   "Solo travel safety tips?",
 ];
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function TripChatbot() {
   const [open, setOpen] = useState(false);
@@ -30,9 +42,25 @@ export default function TripChatbot() {
     },
   ]);
   const [loading, setLoading] = useState(false);
+  const [context, setContext] = useState<ConversationContext | null>(null);
+  const [suggestedAction, setSuggestedAction] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [generatingPlan, setGeneratingPlan] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize session ID from localStorage
+  useEffect(() => {
+    const storedSessionId = localStorage.getItem("chatSessionId");
+    if (storedSessionId) {
+      setSessionId(storedSessionId);
+    } else {
+      const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem("chatSessionId", newSessionId);
+      setSessionId(newSessionId);
+    }
+  }, []);
 
   useEffect(() => {
     if (open && !minimized) {
@@ -46,9 +74,9 @@ export default function TripChatbot() {
     }
   }, [open, minimized]);
 
-  function handleSend() {
+  async function handleSend() {
     const trimmed = input.trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || loading || !sessionId) return;
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -60,27 +88,106 @@ export default function TripChatbot() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
+    setSuggestedAction(null);
 
-    // ── Plug your RAG / API call here ──
-    // Example:
-    // const reply = await ragApi.chat({ message: trimmed, history: messages });
-    // setMessages(prev => [...prev, { id: ..., role: "assistant", content: reply }]);
-    // setLoading(false);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: trimmed,
+        }),
+      });
 
-    // Placeholder timeout to simulate streaming feel
-    setTimeout(() => {
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Add assistant message
       setMessages((prev) => [
         ...prev,
         {
           id: `ai-${Date.now()}`,
           role: "assistant",
-          content:
-            "I'm ready to help with that! Connect me to your RAG backend and I'll give you a real answer. For now, imagine something brilliantly helpful here. ✈️",
+          content: data.reply,
           timestamp: new Date(),
         },
       ]);
+
+      // Update context and suggested action
+      if (data.context) {
+        setContext(data.context);
+      }
+      if (data.suggested_action) {
+        setSuggestedAction(data.suggested_action);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-error-${Date.now()}`,
+          role: "assistant",
+          content:
+            "Sorry, I encountered an error. Please try again or refresh the page.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
+  }
+
+  async function handleGeneratePlan() {
+    if (!sessionId || generatingPlan) return;
+
+    setGeneratingPlan(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat/plan/${sessionId}`, {
+        method: "POST",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to generate plan: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.plan) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `plan-${Date.now()}`,
+            role: "assistant",
+            content: `✨ Here's your personalized trip plan!\n\n${JSON.stringify(data.plan, null, 2)}`,
+            timestamp: new Date(),
+          },
+        ]);
+        setSuggestedAction(null);
+      } else {
+        throw new Error(data.error || "Failed to generate plan");
+      }
+    } catch (error) {
+      console.error("Plan generation error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `plan-error-${Date.now()}`,
+          role: "assistant",
+          content:
+            "I couldn't generate your plan. Please provide more details about your trip.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setGeneratingPlan(false);
+    }
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -96,6 +203,14 @@ export default function TripChatbot() {
   }
 
   function handleClear() {
+    // Clear on backend
+    if (sessionId) {
+      fetch(`${API_BASE_URL}/api/chat/session/${sessionId}`, {
+        method: "DELETE",
+      }).catch(console.error);
+    }
+
+    // Reset frontend state
     setMessages([
       {
         id: "welcome-reset",
@@ -104,6 +219,13 @@ export default function TripChatbot() {
         timestamp: new Date(),
       },
     ]);
+    setContext(null);
+    setSuggestedAction(null);
+
+    // Create new session
+    const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem("chatSessionId", newSessionId);
+    setSessionId(newSessionId);
   }
 
   const formatTime = (date: Date) =>
@@ -341,6 +463,88 @@ export default function TripChatbot() {
                     {s}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* ── Context Display ── */}
+            {context && (
+              <div className="shrink-0 border-t border-[var(--outline-variant,#dde1f0)] bg-gradient-to-r from-indigo-50 to-blue-50 px-4 py-3 space-y-2">
+                <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+                  Trip Context
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {context.source && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        From
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.source}
+                      </p>
+                    </div>
+                  )}
+                  {context.destinations && context.destinations.length > 0 && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        To
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.destinations.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                  {context.duration_days && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        Duration
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.duration_days} days
+                      </p>
+                    </div>
+                  )}
+                  {context.budget && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        Budget
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.budget}
+                      </p>
+                    </div>
+                  )}
+                  {context.pace && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        Pace
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.pace}
+                      </p>
+                    </div>
+                  )}
+                  {context.preferences && context.preferences.length > 0 && (
+                    <div className="rounded-lg bg-white/60 px-2 py-1.5 col-span-2">
+                      <p className="text-[10px] font-medium text-gray-500 uppercase">
+                        Interests
+                      </p>
+                      <p className="font-semibold text-indigo-700">
+                        {context.preferences.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action button */}
+                {suggestedAction === "generate_plan" && (
+                  <button
+                    onClick={handleGeneratePlan}
+                    disabled={generatingPlan}
+                    className="w-full mt-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:shadow-lg disabled:opacity-50"
+                  >
+                    {generatingPlan ? "Generating..." : "✈️ Generate My Trip Plan"}
+                  </button>
+                )}
               </div>
             )}
 

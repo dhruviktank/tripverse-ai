@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import { tripApi, type TripData } from "@/lib/api";
+import TripPlanViewer from "@/components/trip-plan-viewer";
 
 export default function ItineraryDetailPage() {
   const router = useRouter();
@@ -40,6 +40,7 @@ export default function ItineraryDetailPage() {
         title: trip.title,
         trip_description: trip.trip_description,
         status: trip.status,
+        itinerary_data: trip.itinerary_data,
         itinerary_text: trip.itinerary_text,
       });
       setSavedMessage("Trip saved successfully!");
@@ -217,52 +218,9 @@ export default function ItineraryDetailPage() {
           <h2 className="text-xl font-bold text-[var(--on-surface)]">
             Your Itinerary
           </h2>
-          {trip.itinerary_text ? (
-            <div className="mt-4 prose prose-sm max-w-none rounded-xl bg-[var(--surface-container-low)] p-6">
-              <style>{`
-                .prose-viewer h1, .prose-viewer h2, .prose-viewer h3 {
-                  color: var(--on-surface);
-                  margin-top: 1.2em;
-                  margin-bottom: 0.6em;
-                  font-weight: 700;
-                }
-                .prose-viewer h1 { font-size: 1.8em; }
-                .prose-viewer h2 { font-size: 1.4em; }
-                .prose-viewer h3 { font-size: 1.2em; }
-                .prose-viewer p, .prose-viewer li {
-                  color: var(--on-surface-variant);
-                  line-height: 1.6;
-                  margin: 0.5em 0;
-                }
-                .prose-viewer ul, .prose-viewer ol {
-                  margin-left: 1.5em;
-                  margin: 0.8em 0;
-                }
-                .prose-viewer li { margin: 0.3em 0; }
-                .prose-viewer strong { color: var(--primary); font-weight: 600; }
-                .prose-viewer em { font-style: italic; color: var(--on-surface); }
-                .prose-viewer code {
-                  background: var(--surface);
-                  padding: 0.2em 0.4em;
-                  border-radius: 4px;
-                  font-family: monospace;
-                  color: var(--primary);
-                }
-                .prose-viewer blockquote {
-                  border-left: 4px solid var(--primary);
-                  padding-left: 1em;
-                  margin: 1em 0;
-                  color: var(--on-surface-variant);
-                }
-                .prose-viewer hr {
-                  border: none;
-                  border-top: 2px solid var(--outline-variant);
-                  margin: 1.5em 0;
-                }
-              `}</style>
-              <div className="prose-viewer text-[var(--on-surface)]">
-                <ReactMarkdown>{trip.itinerary_text}</ReactMarkdown>
-              </div>
+          {trip.itinerary_data || trip.itinerary_text ? (
+            <div className="mt-4">
+              <TripPlanViewer plan={trip.itinerary_data || trip.itinerary_text} />
             </div>
           ) : (
             <div className="mt-4 rounded-xl border border-dashed border-[var(--outline-variant)] bg-[var(--surface-container-low)] p-6 text-center">

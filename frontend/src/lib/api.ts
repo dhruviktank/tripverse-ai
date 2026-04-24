@@ -76,6 +76,20 @@ export type DashboardStats = {
   next_trip: TripData | null;
 };
 
+export type PlanStreamEvent = {
+  event: 'itinerary' | 'extras' | 'complete' | 'error' | 'validation';
+  success: boolean;
+  plan?: Record<string, unknown>;
+  error?: string;
+  errors?: string[] | null;
+  validation?: {
+    source?: { name: string; confidence: number } | null;
+    destinations: { name: string; confidence: number }[];
+  };
+  requires_confirmation?: boolean;
+  requires_destination?: boolean;
+};
+
 export const tripApi = {
   /** Save a new trip */
   save: (data: Partial<TripData>) =>
@@ -135,9 +149,106 @@ export const tripApi = {
     apiFetch<{ success: boolean; stats: DashboardStats }>('/api/dashboard/stats'),
 
   /** Generate a trip plan (existing endpoint, no auth required but we send it anyway) */
-  plan: (data: { trip_description: string; budget: string; pace: string; starting_from: string }) =>
-    apiFetch<{ success: boolean; plan?: Record<string, unknown>; error?: string; errors?: string[] }>(
+  plan: (data: {
+    trip_description: string;
+    duration_days: number;
+    preferences: string[];
+    budget: string;
+    pace: string;
+    starting_from: string;
+    confirm_intent?: boolean;
+  }) =>
+    apiFetch<{
+      success: boolean;
+      plan?: Record<string, unknown>;
+      error?: string;
+      errors?: string[];
+      validation?: PlanStreamEvent['validation'];
+      requires_confirmation?: boolean;
+      requires_destination?: boolean;
+    }>(
       '/api/trips/plan',
       { method: 'POST', body: JSON.stringify(data) },
     ),
+
+  /** Stream trip planning in phases. Emits NDJSON events. */
+  planStream: async (
+    data: {
+      trip_description: string;
+      duration_days: number;
+      preferences: string[];
+      budget: string;
+      pace: string;
+      starting_from: string;
+      confirm_intent?: boolean;
+    },
+    onEvent: (event: PlanStreamEvent) => void,
+  ) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/api/trips/plan/stream`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
+
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || `API error: ${res.status}`);
+    }
+
+    if (!res.body) {
+      throw new Error('No streaming response body available.');
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const parsed = JSON.parse(trimmed) as PlanStreamEvent;
+          onEvent(parsed);
+        } catch {
+          // Ignore malformed partial chunks.
+        }
+      }
+    }
+
+    const tail = buffer.trim();
+    if (tail) {
+      try {
+        onEvent(JSON.parse(tail) as PlanStreamEvent);
+      } catch {
+        // Ignore malformed tail chunk.
+      }
+    }
+  },
 };

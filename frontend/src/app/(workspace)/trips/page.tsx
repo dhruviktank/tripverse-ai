@@ -16,23 +16,68 @@ interface TimelineDay {
   }>;
 }
 
-function parseItineraryToTimeline(itineraryText: string | null): TimelineDay[] {
-  if (!itineraryText) return [];
+function normalizeSectionItems(
+  items?: Array<{ title?: string; details?: string; time?: string; type?: string }> | string[],
+): Array<{ time: string; type: string; name: string; details: string }> {
+  if (!items) return [];
 
-  // Simple parsing: extract day sections from markdown
-  const dayRegex = /\*{0,2}Day\s+(\d+):\s*([^\n]+)\*{0,2}/gi;
-  const matches = [...itineraryText.matchAll(dayRegex)];
-
-  return matches.map((match) => ({
-    day: String(parseInt(match[1])).padStart(2, "0"),
-    title: match[2],
-    items: [
-      {
+  return items.map((item, index) => {
+    if (typeof item === "string") {
+      return {
         time: "Full Day",
-        type: "Activity",
-        name: "Planned itinerary",
-        details: "See full details in itinerary view",
-      },
+        type: "Note",
+        name: `Item ${index + 1}`,
+        details: item,
+      };
+    }
+
+    return {
+      time: item.time || "Full Day",
+      type: item.type || "Activity",
+      name: item.title || `Item ${index + 1}`,
+      details: item.details || "See itinerary details",
+    };
+  });
+}
+
+function parseItineraryToTimeline(
+  itineraryData: Record<string, unknown> | string | null,
+): TimelineDay[] {
+  if (!itineraryData) return [];
+
+  let plan: any = itineraryData;
+  if (typeof itineraryData === "string") {
+    try {
+      plan = JSON.parse(itineraryData);
+    } catch {
+      const dayRegex = /\*{0,2}Day\s+(\d+):\s*([^\n]+)\*{0,2}/gi;
+      const matches = [...itineraryData.matchAll(dayRegex)];
+      return matches.map((match) => ({
+        day: String(parseInt(match[1])).padStart(2, "0"),
+        title: match[2],
+        items: [
+          {
+            time: "Full Day",
+            type: "Activity",
+            name: "Planned itinerary",
+            details: "See full details in itinerary view",
+          },
+        ],
+      }));
+    }
+  }
+
+  const itinerary = plan.itinerary || plan.itinerary_only || plan;
+  const days = Array.isArray(itinerary.days) ? itinerary.days : [];
+
+  return days.map((day: any, index: number) => ({
+    day: String(day.day ?? index + 1).padStart(2, "0"),
+    title: day.title || `Day ${day.day ?? index + 1}`,
+    items: [
+      ...normalizeSectionItems(day.morning).map((item) => ({ ...item, time: item.time || "Morning" })),
+      ...normalizeSectionItems(day.afternoon).map((item) => ({ ...item, time: item.time || "Afternoon" })),
+      ...normalizeSectionItems(day.evening).map((item) => ({ ...item, time: item.time || "Evening" })),
+      ...normalizeSectionItems(day.notes).map((item) => ({ ...item, time: item.time || "Notes", type: "Note" })),
     ],
   }));
 }
@@ -51,7 +96,7 @@ export default function TripsPage() {
         if (data.trips.length > 0) {
           const trip = data.trips[0];
           setActiveTrip(trip);
-          setTimeline(parseItineraryToTimeline(trip.itinerary_text));
+          setTimeline(parseItineraryToTimeline(trip.itinerary_data || trip.itinerary_text));
         } else {
           setError("No upcoming trips found. Create one to see it here!");
         }

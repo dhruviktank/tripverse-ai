@@ -2,23 +2,17 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import { tripApi } from "@/lib/api";
-
-type TripPlan = {
-  trip_description?: string;
-  budget?: string;
-  pace?: string;
-  starting_from?: string;
-  itinerary?: string;
-  context_sources?: number;
-};
+import { tripApi, PlanStreamEvent } from "@/lib/api";
+import TripPlanViewer, { type TripPlanData } from "@/components/trip-plan-viewer";
 
 type TripApiResponse = {
   success: boolean;
-  plan?: TripPlan;
+  plan?: TripPlanData;
   error?: string;
   errors?: string[] | null;
+  validation?: PlanStreamEvent["validation"];
+  requires_confirmation?: boolean;
+  requires_destination?: boolean;
 };
 
 const preferenceOptions = [
@@ -42,6 +36,8 @@ export default function PlannerPage() {
   const [saving, setSaving] = useState(false);
   const [response, setResponse] = useState<TripApiResponse | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [streamPhase, setStreamPhase] = useState<"idle" | "itinerary" | "extras" | "complete">("idle");
+  const [confirmingIntent, setConfirmingIntent] = useState(false);
 
   function togglePreference(item: string) {
     setPreferences((prev) =>
@@ -51,20 +47,82 @@ export default function PlannerPage() {
     );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function runPlanning(confirmIntent = false) {
     setLoading(true);
     setResponse(null);
     setSavedMessage(null);
+    setStreamPhase("idle");
+    setConfirmingIntent(false);
 
     try {
-      const data = await tripApi.plan({
-        trip_description: `${tripDescription}. Duration: ${duration} days. Preferences: ${preferences.join(", ")}`,
-        budget,
-        pace,
-        starting_from: startingFrom,
-      });
-      setResponse(data as TripApiResponse);
+      await tripApi.planStream(
+        {
+          trip_description: tripDescription,
+          duration_days: duration,
+          preferences,
+          budget,
+          pace,
+          starting_from: startingFrom,
+          confirm_intent: confirmIntent,
+        },
+        (eventData: PlanStreamEvent) => {
+          if (eventData.event === "validation") {
+            setLoading(false);
+            setResponse({
+              success: false,
+              error: eventData.error || "Unable to validate request",
+              validation: eventData.validation,
+              requires_confirmation: eventData.requires_confirmation,
+              requires_destination: eventData.requires_destination,
+            });
+            setConfirmingIntent(Boolean(eventData.requires_confirmation));
+            return;
+          }
+
+          if (eventData.event === "itinerary") {
+            setStreamPhase("itinerary");
+            setResponse((prev) => ({
+              success: true,
+              plan: {
+                ...(prev?.plan || {}),
+                ...(eventData.plan as TripPlanData),
+              },
+            }));
+            return;
+          }
+
+          if (eventData.event === "extras") {
+            setStreamPhase("extras");
+            setResponse((prev) => ({
+              success: true,
+              plan: {
+                ...(prev?.plan || {}),
+                ...(eventData.plan as TripPlanData),
+              },
+            }));
+            return;
+          }
+
+          if (eventData.event === "complete") {
+            setStreamPhase("complete");
+            setResponse({
+              success: true,
+              plan: eventData.plan as TripPlanData,
+              errors: eventData.errors || null,
+            });
+            setConfirmingIntent(false);
+            return;
+          }
+
+          if (eventData.event === "error") {
+            setResponse({
+              success: false,
+              error: eventData.error || "Unable to generate plan",
+              errors: eventData.errors || null,
+            });
+          }
+        },
+      );
     } catch (error) {
       setResponse({
         success: false,
@@ -73,9 +131,32 @@ export default function PlannerPage() {
             ? error.message
             : "Unable to connect to backend",
       });
+      setConfirmingIntent(false);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await runPlanning(false);
+  }
+
+  async function handleConfirmIntentYes() {
+    await runPlanning(true);
+  }
+
+  function handleConfirmIntentNo() {
+    setConfirmingIntent(false);
+    setResponse((prev) =>
+      prev
+        ? {
+            ...prev,
+            error: "Generation cancelled. Update your request if you want a different trip plan.",
+            requires_confirmation: false,
+          }
+        : prev,
+    );
   }
 
   async function handleSaveTrip() {
@@ -86,12 +167,14 @@ export default function PlannerPage() {
     try {
       const result = await tripApi.save({
         title: tripDescription || "Untitled Trip",
-        trip_description: `${tripDescription}. Duration: ${duration} days. Preferences: ${preferences.join(", ")}`,
+        trip_description: tripDescription,
         budget,
         pace,
         starting_from: startingFrom,
         preferences: preferences.join(", "),
-        itinerary_text: response.plan.itinerary || null,
+        dates: `${duration} days`,
+        itinerary_data: response.plan,
+        itinerary_text: JSON.stringify(response.plan),
         status: "upcoming",
         travelers: 1,
       });
@@ -202,7 +285,9 @@ export default function PlannerPage() {
                 <div className="mx-auto h-14 w-14 rounded-full border-2 border-[var(--primary)]/40 bg-white" />
                 <p className="mt-4 text-base font-semibold text-[var(--primary)]">
                   {loading
-                    ? "Analyzing destinations..."
+                    ? streamPhase === "extras"
+                      ? "Building food, budget and safety tips..."
+                      : "Generating day-by-day itinerary..."
                     : "Ready to generate with AI"}
                 </p>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
@@ -272,7 +357,7 @@ export default function PlannerPage() {
                     Generated Plan
                   </p>
                   <h3 className="mt-2 text-2xl font-bold text-[var(--on-surface)]">
-                    Your AI-Powered Itinerary
+                    Your AI-Powered Trip Plan
                   </h3>
                 </div>
                 <div className="text-right">
@@ -283,65 +368,31 @@ export default function PlannerPage() {
                 </div>
               </div>
 
-              {/* Markdown Itinerary Viewer */}
-              <div className="prose prose-sm max-w-none rounded-xl bg-[var(--surface-container-low)] p-6 text-[var(--on-surface)]">
-                <style>{`
-                  .prose-viewer h1, .prose-viewer h2, .prose-viewer h3 {
-                    color: var(--on-surface);
-                    margin-top: 1.2em;
-                    margin-bottom: 0.6em;
-                    font-weight: 700;
-                  }
-                  .prose-viewer h1 { font-size: 1.8em; }
-                  .prose-viewer h2 { font-size: 1.4em; }
-                  .prose-viewer h3 { font-size: 1.2em; }
-                  .prose-viewer p, .prose-viewer li {
-                    color: var(--on-surface-variant);
-                    line-height: 1.6;
-                    margin: 0.5em 0;
-                  }
-                  .prose-viewer ul, .prose-viewer ol {
-                    margin-left: 1.5em;
-                    margin: 0.8em 0;
-                  }
-                  .prose-viewer li { margin: 0.3em 0; }
-                  .prose-viewer strong { color: var(--primary); font-weight: 600; }
-                  .prose-viewer em { font-style: italic; color: var(--on-surface); }
-                  .prose-viewer code {
-                    background: var(--surface);
-                    padding: 0.2em 0.4em;
-                    border-radius: 4px;
-                    font-family: monospace;
-                    color: var(--primary);
-                  }
-                  .prose-viewer blockquote {
-                    border-left: 4px solid var(--primary);
-                    padding-left: 1em;
-                    margin: 1em 0;
-                    color: var(--on-surface-variant);
-                  }
-                  .prose-viewer hr {
-                    border: none;
-                    border-top: 2px solid var(--outline-variant);
-                    margin: 1.5em 0;
-                  }
-                `}</style>
-                <div className="prose-viewer">
-                  <ReactMarkdown>
-                    {response.plan.itinerary || "No itinerary generated."}
-                  </ReactMarkdown>
+              {loading && streamPhase !== "complete" && (
+                <div className="rounded-xl border border-[var(--outline-variant)] bg-[var(--surface-container-low)] p-4 text-sm text-[var(--on-surface-variant)]">
+                  {streamPhase === "extras"
+                    ? "Itinerary ready. Generating food, budget and safety sections..."
+                    : "Generating itinerary..."}
                 </div>
-              </div>
+              )}
+
+              <TripPlanViewer plan={response.plan} compact />
 
               {/* Save Trip Button */}
-              <button
-                type="button"
-                onClick={handleSaveTrip}
-                disabled={saving}
-                className="w-full rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
-              >
-                {saving ? "Saving..." : "💾 Save Trip to History"}
-              </button>
+              {streamPhase === "complete" ? (
+                <button
+                  type="button"
+                  onClick={handleSaveTrip}
+                  disabled={saving}
+                  className="w-full rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {saving ? "Saving..." : "💾 Save Trip to History"}
+                </button>
+              ) : (
+                <div className="rounded-xl border border-dashed border-[var(--outline-variant)] bg-[var(--surface-container-low)] px-5 py-4 text-center text-sm text-[var(--on-surface-variant)]">
+                  Loading Food Culture Budget and Safety tips stay tuned...
+                </div>
+              )}
 
               {savedMessage && (
                 <p
@@ -357,15 +408,51 @@ export default function PlannerPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-2 text-sm text-red-700">
-              <p className="font-semibold">Unable to generate plan</p>
-              <p>{response.error || "Unknown backend error"}</p>
-              {response.errors && response.errors.length > 0 && (
-                <ul className="list-disc pl-5">
-                  {response.errors.map((item, idx) => (
-                    <li key={`${item}-${idx}`}>{item}</li>
-                  ))}
-                </ul>
+            <div className="space-y-3 text-sm">
+              {response.validation ? (
+                <div className="rounded-2xl border border-[var(--outline-variant)] bg-[var(--surface-container-low)] p-4 text-[var(--on-surface)]">
+                  <p className="text-xs font-bold tracking-[0.16em] text-[var(--primary)] uppercase">
+                    Request Clarification
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed">
+                    {response.error || "Please refine your trip request to continue."}
+                  </p>
+                  {response.requires_destination && (
+                    <p className="mt-2 text-xs text-[var(--on-surface-variant)]">
+                      Tip: add a destination name to continue planning.
+                    </p>
+                  )}
+                  {confirmingIntent && (
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleConfirmIntentYes}
+                        className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700"
+                      >
+                        Yes, continue
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmIntentNo}
+                        className="rounded-lg border border-[var(--outline-variant)] bg-white px-4 py-2 text-xs font-bold text-[var(--on-surface)] transition hover:bg-[var(--surface-container-low)]"
+                      >
+                        No
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+                  <p className="font-semibold">Unable to generate plan</p>
+                  <p className="mt-1">{response.error || "Unknown backend error"}</p>
+                  {response.errors && response.errors.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {response.errors.map((item, idx) => (
+                        <li key={`${item}-${idx}`}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
             </div>
           )}
