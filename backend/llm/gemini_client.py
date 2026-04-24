@@ -1,16 +1,20 @@
-"""LLM client for GenAI operations."""
+"""Gemini and Grok-compatible chat LLM client."""
 
-from typing import Optional, List, Dict, Any
-from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
-from config import get_settings
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional
+
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+
+from core.config import get_settings
+from llm.base import BaseLLMClient
 
 
-class LLMClient:
-    """Client for interacting with LLMs."""
+class GeminiClient(BaseLLMClient):
+    """Provider-backed client for text generation."""
 
     @staticmethod
     def _normalize_content(content: Any) -> str:
-        """Normalize provider content payloads into plain text."""
         if isinstance(content, str):
             return content
         if isinstance(content, list):
@@ -28,14 +32,14 @@ class LLMClient:
         if content is None:
             return ""
         return str(content)
-    
+
     def __init__(self):
-        """Initialize the LLM client."""
         settings = get_settings()
         self.provider = settings.llm_provider
         self.model = settings.llm_model
+        print(self.model)
         self.temperature = settings.llm_temperature
-        
+
         if self.provider == "gemini":
             try:
                 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -48,7 +52,7 @@ class LLMClient:
                 temperature=self.temperature,
                 google_api_key=settings.gemini_api_key,
                 max_retries=settings.max_retries,
-                timeout=settings.request_timeout
+                timeout=settings.request_timeout,
             )
         elif self.provider == "grok":
             try:
@@ -62,73 +66,37 @@ class LLMClient:
                 temperature=self.temperature,
                 api_key=settings.grok_api_key,
                 max_retries=settings.max_retries,
-                timeout=settings.request_timeout
+                timeout=settings.request_timeout,
             )
         else:
             raise ValueError(f"Unknown LLM provider: {self.provider}")
-    
-    async def generate(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        **kwargs
-    ) -> str:
-        """Generate text using the LLM."""
+
+    async def generate(self, prompt: str, system_prompt: Optional[str] = None, **kwargs) -> str:
         messages: List[BaseMessage] = []
-        
         if system_prompt:
             messages.append(SystemMessage(content=system_prompt))
-        
         messages.append(HumanMessage(content=prompt))
-        
-        try:
-            response = self.llm.invoke(messages, **kwargs)
-            return self._normalize_content(response.content)
-        except Exception as e:
-            raise Exception(f"Error generating response: {e}")
-    
+
+        response = self.llm.invoke(messages, **kwargs)
+        return self._normalize_content(response.content)
+
     async def generate_structured(
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
         output_schema: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
-        """Generate structured output using the LLM."""
-        # This would use JSON mode or function calling in production
         response = await self.generate(prompt, system_prompt, **kwargs)
         return {"response": response}
-    
-    async def stream_generate(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        **kwargs
-    ):
-        """Stream text generation from the LLM."""
+
+    async def stream_generate(self, prompt: str, system_prompt: Optional[str] = None, **kwargs):
         messages: List[BaseMessage] = []
-        
         if system_prompt:
             messages.append(SystemMessage(content=system_prompt))
-        
         messages.append(HumanMessage(content=prompt))
-        
-        try:
-            for chunk in self.llm.stream(messages, **kwargs):
-                normalized = self._normalize_content(getattr(chunk, "content", ""))
-                if normalized:
-                    yield normalized
-        except Exception as e:
-            raise Exception(f"Error streaming response: {e}")
 
-
-# Global instance
-_llm_client: Optional[LLMClient] = None
-
-
-def get_llm_client() -> LLMClient:
-    """Get or create the LLM client."""
-    global _llm_client
-    if _llm_client is None:
-        _llm_client = LLMClient()
-    return _llm_client
+        for chunk in self.llm.stream(messages, **kwargs):
+            normalized = self._normalize_content(getattr(chunk, "content", ""))
+            if normalized:
+                yield normalized

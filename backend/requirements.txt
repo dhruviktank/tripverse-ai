@@ -15,6 +15,7 @@ numpy
 httpx
 aiohttp
 requests
+tavily-python
 python-multipart
 sqlalchemy[asyncio]
 asyncpg

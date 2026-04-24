@@ -1,37 +1,30 @@
 """Database connection setup using async SQLAlchemy with Neon Postgres."""
 
 import ssl as _ssl
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from config import get_settings
+
+from core.config import get_settings
 
 settings = get_settings()
 
 
 def _build_asyncpg_url(raw_url: str) -> tuple[str, dict]:
-    """Convert a standard postgres:// URL to one compatible with asyncpg.
-
-    asyncpg doesn't understand 'sslmode' or 'channel_binding' query params,
-    so we strip them and pass SSL via connect_args instead.
-    """
-    # Swap scheme to postgresql+asyncpg
+    """Convert a standard postgres URL to one compatible with asyncpg."""
     url = raw_url.strip().strip("'\"")
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+asyncpg://", 1)
     elif url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-    # Parse and clean query params
     parsed = urlparse(url)
     params = parse_qs(parsed.query)
 
-    # Determine if SSL is needed
     needs_ssl = params.pop("sslmode", [None])[0] in ("require", "verify-full", "verify-ca", "prefer")
-    # Remove channel_binding (asyncpg doesn't support it)
     params.pop("channel_binding", None)
 
-    # Rebuild the URL without incompatible params
     clean_query = urlencode({k: v[0] for k, v in params.items()}, doseq=False)
     clean_url = urlunparse(parsed._replace(query=clean_query))
 
@@ -65,7 +58,6 @@ AsyncSessionLocal = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """Base class for all ORM models."""
-    pass
 
 
 async def get_db():

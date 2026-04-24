@@ -3,9 +3,11 @@
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, DateTime, Text, Boolean, Integer, Float, ForeignKey, JSON
+
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base
+
+from core.database import Base
 
 
 class User(Base):
@@ -13,22 +15,14 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(
-        String(36),
-        primary_key=True,
-        default=lambda: str(uuid.uuid4()),
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationship
     trips: Mapped[list["Trip"]] = relationship("Trip", back_populates="user", lazy="selectin")
 
     def __repr__(self) -> str:
@@ -40,23 +34,17 @@ class Trip(Base):
 
     __tablename__ = "trips"
 
-    id: Mapped[str] = mapped_column(
-        String(36),
-        primary_key=True,
-        default=lambda: str(uuid.uuid4()),
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     trip_description: Mapped[str] = mapped_column(Text, nullable=False)
-    budget: Mapped[str] = mapped_column(String(50), nullable=False)  # Value | Balanced | Luxury
-    pace: Mapped[str] = mapped_column(String(50), nullable=False)    # Relaxed | Balanced | High-energy
+    budget: Mapped[str] = mapped_column(String(50), nullable=False)
+    pace: Mapped[str] = mapped_column(String(50), nullable=False)
     starting_from: Mapped[str] = mapped_column(String(255), nullable=False)
     preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    status: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="upcoming"
-    )  # upcoming | past | draft
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="upcoming")
     is_favorite: Mapped[bool] = mapped_column(Boolean, default=False)
     itinerary_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     itinerary_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -66,8 +54,7 @@ class Trip(Base):
     dates: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     thumbnail_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -75,7 +62,6 @@ class Trip(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    # Relationship
     user: Mapped["User"] = relationship("User", back_populates="trips")
 
     def __repr__(self) -> str:

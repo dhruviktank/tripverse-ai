@@ -16,13 +16,24 @@ A powerful AI-driven trip planning backend built with FastAPI, LangGraph, and Ve
 ```
 backend/
 ├── main.py                 # FastAPI application entry point
-├── config.py              # Configuration management
-├── llm_client.py          # LLM integration (OpenAI/Claude)
-├── vector_db.py           # Vector database client
-├── orchestrator.py        # LangGraph workflow for trip planning
-├── requirements.txt       # Python dependencies
-├── .env.example           # Environment variables template
-└── README.md             # This file
+├── app_factory.py          # FastAPI app construction and router wiring
+├── planning_routes.py      # Health, planning, search, and root endpoints
+├── auth_routes.py          # Authentication endpoints
+├── trip_routes.py          # Trip CRUD and dashboard endpoints
+├── schemas/                # Shared request/response models
+├── services/               # Shared business logic helpers
+├── services/auth_service.py # Authentication persistence and token helpers
+├── services/trip_service.py # Trip persistence, queries, and aggregation helpers
+├── config.py               # Configuration management
+├── database.py             # Async SQLAlchemy setup
+├── auth.py                 # JWT and password utilities
+├── llm_client.py           # LLM integration (Gemini/Groq)
+├── vector_db.py            # Vector database client
+├── search_client.py        # Web search integration
+├── orchestrator.py         # LangGraph workflow for trip planning
+├── models.py               # SQLAlchemy ORM models
+├── requirements.txt        # Python dependencies
+└── README.md               # This file
 ```
 
 ## Setup
@@ -155,13 +166,18 @@ workflow.add_edge("previous_stage", "new_stage")
 ```
 
 ### Add New Endpoints
-Add to `main.py`:
+Add to `planning_routes.py` or a dedicated router module:
 
 ```python
 @app.get("/api/new-endpoint")
 async def new_endpoint():
     pass
 ```
+
+### Shared Schemas And Services
+- Put request/response models in `schemas/`.
+- Put reusable query or aggregation logic in `services/`.
+- Keep `main.py` as a thin entrypoint that only exposes the ASGI app.
 
 ### Customize LLM Prompts
 Edit system and user prompts in `orchestrator.py` methods.
