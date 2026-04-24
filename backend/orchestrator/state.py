@@ -27,8 +27,8 @@ class TripPlanningState(BaseModel):
     requires_destination: bool = False
     validation: Optional[Dict[str, Any]] = None
     context_documents: List[Dict[str, Any]] = Field(default_factory=list)
-    initial_draft: Optional[str] = None
-    refined_itinerary: Optional[str] = None
-    food_budget_tips: Optional[str] = None
+    initial_draft: Optional[Dict[str, Any]] = None
+    refined_itinerary: Optional[Dict[str, Any]] = None
+    food_budget_tips: Optional[Dict[str, Any]] = None
     final_plan: Optional[Dict[str, Any]] = None
     errors: List[str] = Field(default_factory=list)

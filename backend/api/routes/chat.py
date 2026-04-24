@@ -157,7 +157,7 @@ async def generate_plan_from_chat(session_id: str):
     try:
         # Check session exists
         session_info = await chat_service.get_session_info(session_id)
-        print(session_id)
+        
         if not session_info:
             raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
 

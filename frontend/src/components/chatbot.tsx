@@ -5,7 +5,8 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 type Message = {
   id: string;
   role: "user" | "assistant";
-  content: string;
+  content?: string;
+  plan?: any;
   timestamp: Date;
 };
 
@@ -27,7 +28,78 @@ const SUGGESTIONS = [
 ];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function TripPlanCard({ plan }: { plan: any }) {
+  const itinerary = plan?.itinerary;
 
+  return (
+    <div className="bg-white rounded-2xl shadow p-4 space-y-3 border">
+      <h2 className="text-lg font-bold text-indigo-600">
+        {itinerary?.trip_title || "Your Trip Plan"}
+      </h2>
+
+      <p className="text-sm text-gray-600">
+        {itinerary?.summary}
+      </p>
+
+      <div className="space-y-4">
+        {itinerary?.days?.map((day: any) => (
+          <div key={day.day} className="border rounded-xl p-3">
+            <h3 className="font-semibold text-gray-800">
+              Day {day.day}: {day.title}
+            </h3>
+
+            {day.morning && (
+              <div className="mt-2">
+                <p className="text-xs font-bold text-gray-500">Morning</p>
+                {day.morning.map((m: any, i: number) => (
+                  <p key={i} className="text-sm">🌅 {m.title}</p>
+                ))}
+              </div>
+            )}
+
+            {day.afternoon && (
+              <div className="mt-2">
+                <p className="text-xs font-bold text-gray-500">Afternoon</p>
+                {day.afternoon.map((a: any, i: number) => (
+                  <p key={i} className="text-sm">🌇 {a.title}</p>
+                ))}
+              </div>
+            )}
+
+            {day.evening && (
+              <div className="mt-2">
+                <p className="text-xs font-bold text-gray-500">Evening</p>
+                {day.evening.map((e: any, i: number) => (
+                  <p key={i} className="text-sm">🌃 {e.title}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {plan?.food_and_culture?.length > 0 && (
+        <div>
+          <h3 className="font-semibold mt-3">Food & Culture</h3>
+          {plan.food_and_culture.map((f: any, i: number) => (
+            <p key={i} className="text-sm">🍴 {f.title}</p>
+          ))}
+        </div>
+      )}
+
+      {plan?.budget_breakdown && (
+        <div>
+          <h3 className="font-semibold mt-3">Budget</h3>
+          {plan.budget_breakdown.map((b: any, i: number) => (
+            <p key={i} className="text-sm">
+              💰 {b.title}: {b.details}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 export default function TripChatbot() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -165,7 +237,8 @@ export default function TripChatbot() {
           {
             id: `plan-${Date.now()}`,
             role: "assistant",
-            content: `✨ Here's your personalized trip plan!\n\n${JSON.stringify(data.plan, null, 2)}`,
+            plan: data.plan, // ✅ store structured data
+            content: "Here is your personalized trip plan ✨",
             timestamp: new Date(),
           },
         ]);
@@ -420,7 +493,11 @@ export default function TripChatbot() {
                           : {}
                       }
                     >
-                      {msg.content}
+                      {msg.plan ? (
+                        <TripPlanCard plan={msg.plan} />
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                     <span className="text-[10px] text-[var(--on-surface-variant,#888)] px-1">
                       {formatTime(msg.timestamp)}

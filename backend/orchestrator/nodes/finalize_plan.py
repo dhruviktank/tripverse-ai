@@ -12,9 +12,9 @@ from utils import dump_location_point, dump_location_points
 async def run_finalize_plan(state: TripPlanningState, logger):
     """Finalize and persist complete plan in state."""
     node_started_at = perf_counter()
-    itinerary_only = json.loads(state.initial_draft) if state.initial_draft else {}
-    extras_only = json.loads(state.food_budget_tips) if state.food_budget_tips else {}
-    combined_plan = json.loads(state.refined_itinerary) if state.refined_itinerary else {}
+    itinerary_only = state.initial_draft or {}
+    extras_only = state.food_budget_tips or {}
+    combined_plan = state.refined_itinerary or {}
 
     final_plan = {
         "trip_description": state.trip_description,
