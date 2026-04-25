@@ -1,6 +1,6 @@
 'use client';
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL?.trim() || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Authenticated API fetch wrapper.
