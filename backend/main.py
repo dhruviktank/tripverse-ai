@@ -43,7 +43,9 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
-            "https://tripverseai.vercel.app",
+            "https://tripverseai.dhruviktank.tech",
+            "https://tripverse-ai-eight.vercel.app",
+            "https://tripverse-ai-dhruviks-projects.vercel.app",
             "http://localhost:3000"
         ],
         allow_credentials=True,
