@@ -37,7 +37,6 @@ class GeminiClient(BaseLLMClient):
         settings = get_settings()
         self.provider = settings.llm_provider
         self.model = settings.llm_model
-        print(self.model)
         self.temperature = settings.llm_temperature
 
         if self.provider == "gemini":

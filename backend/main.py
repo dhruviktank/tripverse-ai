@@ -57,8 +57,6 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-for route in app.routes:
-    print(route.path)
 
 if __name__ == "__main__":
     import uvicorn

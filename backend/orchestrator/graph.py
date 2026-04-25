@@ -79,7 +79,7 @@ class TripPlanningOrchestrator:
     async def plan_trip_stream(self, trip_input: Dict[str, Any]) -> AsyncGenerator[Dict[str, Any], None]:
         flow_started_at = perf_counter()
         request_id, debug_trace_dir = create_request_debug_dir(self.settings.planning_debug_root, request_prefix="stream")
-        write_debug_json(debug_trace_dir, "00_request.json", {"request_id": request_id, "trip_input": trip_input})
+        # write_debug_json(debug_trace_dir, "00_request.json", {"request_id": request_id, "trip_input": trip_input})
 
         state = TripPlanningState(
             trip_description=trip_input.get("trip_description", ""),
@@ -93,33 +93,102 @@ class TripPlanningOrchestrator:
             debug_trace_dir=debug_trace_dir,
             confirm_intent=bool(trip_input.get("confirm_intent", False)),
         )
-        planning_input = TripPlanningInput(
-            trip_description=state.trip_description,
-            duration_days=state.duration_days,
-            preferences=state.preferences,
-            source=state.source,
-            destinations=state.destinations,
-            budget=state.budget,
-            pace=state.pace,
-        )
+        # planning_input = TripPlanningInput(
+        #     trip_description=state.trip_description,
+        #     duration_days=state.duration_days,
+        #     preferences=state.preferences,
+        #     source=state.source,
+        #     destinations=state.destinations,
+        #     budget=state.budget,
+        #     pace=state.pace,
+        # )
 
         try:
-            validation_updates = await self._validate_request(state)
-            for key, value in validation_updates.items():
-                setattr(state, key, value)
+            # validation_updates = await self._validate_request(state)
+            # for key, value in validation_updates.items():
+            #     setattr(state, key, value)
 
-            write_debug_json(
-                debug_trace_dir,
-                "05_validation_resolution.json",
-                {
-                    "is_request_valid": state.is_request_valid,
-                    "requires_confirmation": state.requires_confirmation,
-                    "requires_destination": state.requires_destination,
-                    "source": dump_location_point(state.source),
-                    "destinations": dump_location_points(state.destinations),
-                },
-            )
+            # if not state.is_request_valid:
+            #     validation_payload = state.validation or {}
+            #     message = validation_payload.get("message") or "Invalid trip request"
+            #     public_validation = {
+            #         "source": validation_payload.get("source"),
+            #         "destinations": validation_payload.get("destinations", []),
+            #     }
+            #     validation_event = {
+            #         "event": "validation",
+            #         "success": False,
+            #         "error": message,
+            #         "validation": public_validation,
+            #         "requires_confirmation": state.requires_confirmation,
+            #         "requires_destination": state.requires_destination,
+            #     }
+            #     # write_debug_json(debug_trace_dir, "99_final_result.json", validation_event)
+            #     yield validation_event
+            #     return
 
+            # await self._retrieve_context(state)
+
+            # context_snippets = []
+            # for doc in state.context_documents[:2]:
+            #     metadata = doc.get("metadata") or {}
+            #     snippet = (metadata.get("content") or "").strip()
+            #     if snippet:
+            #         context_snippets.append(snippet[:500])
+            # context_block = "\n\n".join(context_snippets) if context_snippets else "No external context available."
+            # # write_debug_json(debug_trace_dir, "13_context_documents.json", state.context_documents[:2])
+            # # selected_destination = select_first_destination(state.destinations)
+
+            # itinerary_prompt = build_itinerary_prompt(planning_input, context_block)
+            # # write_debug_text(debug_trace_dir, "10_itinerary_prompt.txt", itinerary_prompt)
+            # itinerary_text = await self.llm_client.generate(
+            #     prompt=itinerary_prompt,
+            #     system_prompt=ITINERARY_SYSTEM_PROMPT,
+            # )
+            # # write_debug_text(debug_trace_dir, "11_itinerary_raw_response.txt", itinerary_text)
+            # itinerary_only = parse_json_response(itinerary_text)
+            # # write_debug_json(debug_trace_dir, "12_itinerary_parsed_response.json", itinerary_only)
+            # state.initial_draft = itinerary_only
+            # yield {
+            #     "event": "itinerary",
+            #     "success": True,
+            #     "plan": {
+            #         "itinerary": itinerary_only,
+            #         "itinerary_only": itinerary_only,
+            #         "context_sources": len(state.context_documents),
+            #     },
+            # }
+
+            # extras_prompt = build_extras_prompt(planning_input, context_block, itinerary_only)
+            # # write_debug_text(debug_trace_dir, "20_extras_prompt.txt", extras_prompt)
+            # extras_text = await self.llm_client.generate(
+            #     prompt=extras_prompt,
+            #     system_prompt=EXTRAS_SYSTEM_PROMPT,
+            # )
+            # # write_debug_text(debug_trace_dir, "21_extras_raw_response.txt", extras_text)
+            # extras_only = parse_json_response(extras_text)
+            # # write_debug_json(debug_trace_dir, "22_extras_parsed_response.json", extras_only)
+            # state.food_budget_tips = extras_only
+            # state.refined_itinerary = {
+            #     "itinerary": itinerary_only,
+            #     "food_and_culture": extras_only.get("food_and_culture", []),
+            #     "budget_breakdown": extras_only.get("budget_breakdown", []),
+            #     "safety_and_practical_tips": extras_only.get("safety_and_practical_tips", []),
+            # }
+            # yield {
+            #     "event": "extras",
+            #     "success": True,
+            #     "plan": {
+            #         "food_budget_tips": extras_only,
+            #         "itinerary": state.refined_itinerary,
+            #     },
+            # }
+
+            # await self._finalize_plan(state)
+            result = await self.graph.ainvoke(state.model_dump())
+            for key, value in result.items():
+                if hasattr(state, key):
+                    setattr(state, key, value)
             if not state.is_request_valid:
                 validation_payload = state.validation or {}
                 message = validation_payload.get("message") or "Invalid trip request"
@@ -135,96 +204,20 @@ class TripPlanningOrchestrator:
                     "requires_confirmation": state.requires_confirmation,
                     "requires_destination": state.requires_destination,
                 }
-                write_debug_json(debug_trace_dir, "99_final_result.json", validation_event)
+                # write_debug_json(debug_trace_dir, "99_final_result.json", validation_event)
                 yield validation_event
                 return
-
-            await self._retrieve_context(state)
-
-            context_snippets = []
-            for doc in state.context_documents[:2]:
-                metadata = doc.get("metadata") or {}
-                snippet = (metadata.get("content") or "").strip()
-                if snippet:
-                    context_snippets.append(snippet[:500])
-            context_block = "\n\n".join(context_snippets) if context_snippets else "No external context available."
-            write_debug_json(debug_trace_dir, "13_context_documents.json", state.context_documents[:2])
-            write_debug_text(debug_trace_dir, "14_context_block.txt", context_block)
-            selected_destination = select_first_destination(state.destinations)
-            write_debug_json(
-                debug_trace_dir,
-                "15_retrieval_context.json",
-                {
-                    "source": dump_location_point(state.source),
-                    "destinations": dump_location_points(state.destinations),
-                    "selected_destination": dump_location_point(selected_destination),
-                    "search_query": " ".join(
-                        part for part in [state.trip_description, selected_destination.name if selected_destination else "", state.budget] if part
-                    ).strip(),
-                },
-            )
-
-            itinerary_prompt = build_itinerary_prompt(planning_input, context_block)
-            write_debug_text(debug_trace_dir, "10_itinerary_prompt.txt", itinerary_prompt)
-            itinerary_text = await self.llm_client.generate(
-                prompt=itinerary_prompt,
-                system_prompt=ITINERARY_SYSTEM_PROMPT,
-            )
-            write_debug_text(debug_trace_dir, "11_itinerary_raw_response.txt", itinerary_text)
-            itinerary_only = parse_json_response(itinerary_text)
-            write_debug_json(debug_trace_dir, "12_itinerary_parsed_response.json", itinerary_only)
-            state.initial_draft = json.dumps(itinerary_only, ensure_ascii=False)
-            yield {
-                "event": "itinerary",
-                "success": True,
-                "plan": {
-                    "itinerary": itinerary_only,
-                    "itinerary_only": itinerary_only,
-                    "context_sources": len(state.context_documents),
-                },
-            }
-
-            extras_prompt = build_extras_prompt(planning_input, context_block, itinerary_only)
-            write_debug_text(debug_trace_dir, "20_extras_prompt.txt", extras_prompt)
-            extras_text = await self.llm_client.generate(
-                prompt=extras_prompt,
-                system_prompt=EXTRAS_SYSTEM_PROMPT,
-            )
-            write_debug_text(debug_trace_dir, "21_extras_raw_response.txt", extras_text)
-            extras_only = parse_json_response(extras_text)
-            write_debug_json(debug_trace_dir, "22_extras_parsed_response.json", extras_only)
-            state.food_budget_tips = json.dumps(extras_only, ensure_ascii=False)
-            state.refined_itinerary = json.dumps(
-                {
-                    "itinerary": itinerary_only,
-                    "food_and_culture": extras_only.get("food_and_culture", []),
-                    "budget_breakdown": extras_only.get("budget_breakdown", []),
-                    "safety_and_practical_tips": extras_only.get("safety_and_practical_tips", []),
-                },
-                ensure_ascii=False,
-            )
-            yield {
-                "event": "extras",
-                "success": True,
-                "plan": {
-                    "food_budget_tips": extras_only,
-                    "itinerary": json.loads(state.refined_itinerary),
-                },
-            }
-
-            await self._finalize_plan(state)
-            write_debug_json(
-                debug_trace_dir,
-                "99_final_result.json",
-                {"event": "complete", "success": True, "plan": state.final_plan, "errors": state.errors or None},
-            )
+            write_debug_json("debug_graph", "final_plan.json", result)
             logger.info(f"[TIMING] orchestrator.plan_trip_stream.total={perf_counter() - flow_started_at:.3f}s")
-            yield {"event": "complete", "success": True, "plan": state.final_plan, "errors": state.errors or None}
+            yield {"event": "complete", "success": True, "plan": result["final_plan"], "errors": state.errors or None}
         except Exception as exc:
             logger.info(f"[TIMING] orchestrator.plan_trip_stream.total={perf_counter() - flow_started_at:.3f}s (exception)")
+            print("Error:", exc)
+            import traceback
+            traceback.print_exc()
             state.errors.append(str(exc))
             error_event = {"event": "error", "success": False, "error": str(exc), "errors": state.errors}
-            write_debug_json(debug_trace_dir, "99_final_result.json", error_event)
+            # write_debug_json(debug_trace_dir, "99_final_result.json", error_event)
             yield error_event
 
     async def plan_trip(self, trip_input: Dict[str, Any]) -> Dict[str, Any]:
@@ -264,17 +257,17 @@ class TripPlanningOrchestrator:
                     "requires_confirmation": bool(result.get("requires_confirmation", False)),
                     "requires_destination": bool(result.get("requires_destination", False)),
                 }
-                write_debug_json(debug_trace_dir, "99_final_result.json", invalid_result)
+                # write_debug_json(debug_trace_dir, "99_final_result.json", invalid_result)
                 return invalid_result
 
             logger.info(f"[TIMING] orchestrator.plan_trip.total={perf_counter() - flow_started_at:.3f}s")
             success_result = {"success": True, "plan": result.get("final_plan"), "errors": result.get("errors") or None}
-            write_debug_json(debug_trace_dir, "99_final_result.json", success_result)
+            # write_debug_json(debug_trace_dir, "99_final_result.json", success_result)
             return success_result
         except Exception as exc:
             logger.info(f"[TIMING] orchestrator.plan_trip.total={perf_counter() - flow_started_at:.3f}s (exception)")
             error_result = {"success": False, "error": str(exc), "errors": state.errors}
-            write_debug_json(debug_trace_dir, "99_final_result.json", error_result)
+            # write_debug_json(debug_trace_dir, "99_final_result.json", error_result)
             return error_result
 
 

@@ -6,7 +6,7 @@ import json
 from time import perf_counter
 
 from orchestrator.state import TripPlanningState
-from utils import dump_location_point, dump_location_points
+from utils import dump_location_point, dump_location_points, write_debug_text
 
 
 async def run_finalize_plan(state: TripPlanningState, logger):
@@ -15,7 +15,9 @@ async def run_finalize_plan(state: TripPlanningState, logger):
     itinerary_only = state.initial_draft or {}
     extras_only = state.food_budget_tips or {}
     combined_plan = state.refined_itinerary or {}
-
+    # write_debug_text("debug_str", "1_extras.txt", str(type(extras_only)))
+    # write_debug_text("debug_str", "2_itinerary.txt", str(type(itinerary_only)))
+    # write_debug_text("debug_str", "3_itinerary.txt", str(type(combined_plan)))
     final_plan = {
         "trip_description": state.trip_description,
         "source": dump_location_point(state.source),

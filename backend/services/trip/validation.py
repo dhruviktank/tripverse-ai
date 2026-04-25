@@ -29,7 +29,7 @@ Rules:
 - Destination = real place (city/country/region), else []
 - travel_intent = true ONLY if user wants to plan/visit/travel
 - preferences = food, culture, nature, adventure, relax, nightlife, etc.
-- is_valid_request = true ONLY if travel_intent AND at least one destination
+- is_valid_request = true ONLY at least one destination
 - missing_fields: add "destination" or "intent" if missing
 - If input is random/irrelevant → is_valid_request = false
 - Do NOT hallucinate
