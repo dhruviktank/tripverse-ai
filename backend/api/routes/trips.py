@@ -19,6 +19,8 @@ from services.trip.service import (
     list_user_trips,
     persist_plan,
 )
+from services.thumbnail.service import extract_thumbnail_url
+from utils import write_debug_text
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,8 @@ async def save_trip(
     db: AsyncSession = Depends(get_db),
 ):
     trip = create_trip_from_request(current_user.id, request)
+    thumbnail_url = extract_thumbnail_url(trip.itinerary_data)
+    trip.thumbnail_url = thumbnail_url
     db.add(trip)
     await db.commit()
     await db.refresh(trip)

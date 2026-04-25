@@ -6,7 +6,7 @@ import json
 import logging
 from time import perf_counter
 from typing import Any, AsyncGenerator, Dict, Optional
-
+from services.thumbnail.service import enrich_itinerary_with_images
 from langgraph.graph import END, StateGraph
 
 from core.config import get_settings
@@ -147,6 +147,7 @@ class TripPlanningOrchestrator:
             )
             # write_debug_text(debug_trace_dir, "11_itinerary_raw_response.txt", itinerary_text)
             itinerary_only = parse_json_response(itinerary_text)
+            itinerary_only = await enrich_itinerary_with_images(itinerary_only)
             # write_debug_json(debug_trace_dir, "12_itinerary_parsed_response.json", itinerary_only)
             state.initial_draft = itinerary_only
             yield {
@@ -223,7 +224,7 @@ class TripPlanningOrchestrator:
     async def plan_trip(self, trip_input: Dict[str, Any]) -> Dict[str, Any]:
         flow_started_at = perf_counter()
         request_id, debug_trace_dir = create_request_debug_dir(self.settings.planning_debug_root, request_prefix="plan")
-        write_debug_json(debug_trace_dir, "00_request.json", {"request_id": request_id, "trip_input": trip_input})
+        # write_debug_json(debug_trace_dir, "00_request.json", {"request_id": request_id, "trip_input": trip_input})
 
         state = TripPlanningState(
             trip_description=trip_input.get("trip_description", ""),

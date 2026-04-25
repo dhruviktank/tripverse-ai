@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import Trip
 from schemas.trips import SaveTripRequest, UpdateTripRequest
-
+from services.thumbnail.service import extract_thumbnail_from_trip
 
 def build_trip_list_query(user_id: str, filter_name: Optional[str] = None, sort_by: str = "newest"):
     query = select(Trip).where(Trip.user_id == user_id)
@@ -38,6 +38,13 @@ async def get_trip_for_user(db: AsyncSession, trip_id: str, user_id: str) -> Tri
     trip = result.scalar_one_or_none()
     if trip is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+    thumbnail = extract_thumbnail_from_trip(trip)
+
+    if thumbnail and not trip.thumbnail_url:
+        trip.thumbnail_url = thumbnail
+        db.add(trip)
+        await db.commit()
+        await db.refresh(trip)
     return trip
 
 

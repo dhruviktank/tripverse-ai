@@ -62,6 +62,7 @@ JSON SCHEMA
         {{
             "day": 1,
             "title": "day title",
+            "image_keyword": "search keyword for image (e.g. 'paris eiffel tower sunrise', 'amalfi coast cliffs')",
             "morning": [{{"title": "...", "details": "..."}}],
             "afternoon": [{{"title": "...", "details": "..."}}],
             "evening": [{{"title": "...", "details": "..."}}],
@@ -88,6 +89,7 @@ HARD REQUIREMENTS
 - The day numbers must run from 1 to {duration_days}.
 - Keep each activity concise and practical.
 - Use the trip details and context to produce realistic logistics.
+- Each day MUST include a realistic image_keyword suitable for Unsplash search.
 
 FINAL CHECK (DO BEFORE RETURNING)
 - JSON parses successfully.

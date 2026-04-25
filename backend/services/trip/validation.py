@@ -119,16 +119,16 @@ async def validate_trip_request(
     debug_trace_dir: str | None = None,
 ) -> TripRequestValidation:
     prompt = VALIDATION_PROMPT_TEMPLATE.replace("{user_input}", user_input)
-    write_debug_text(debug_trace_dir, "01_validation_prompt.txt", prompt)
+    # write_debug_text(debug_trace_dir, "01_validation_prompt.txt", prompt)
     try:
         raw = await llm_client.generate(prompt=prompt)
-        write_debug_text(debug_trace_dir, "02_validation_raw_response.txt", raw)
+        # write_debug_text(debug_trace_dir, "02_validation_raw_response.txt", raw)
         parsed = _parse_json_response(raw)
         if source_name:
             parsed["source"] = {"name": source_name, "confidence": 1.0}
-        write_debug_json(debug_trace_dir, "03_validation_parsed_response.json", parsed)
+        # write_debug_json(debug_trace_dir, "03_validation_parsed_response.json", parsed)
         validation_result = _to_validation_response(parsed)
-        write_debug_json(debug_trace_dir, "04_validation_result.json", validation_result.model_dump())
+        # write_debug_json(debug_trace_dir, "04_validation_result.json", validation_result.model_dump())
         return validation_result
     except Exception:
         fallback = {
@@ -140,5 +140,5 @@ async def validate_trip_request(
             "missing_fields": ["intent", "destination"],
             "message": "I could not validate your request. Please share your travel intent and destination.",
         }
-        write_debug_json(debug_trace_dir, "04_validation_fallback.json", fallback)
+        # write_debug_json(debug_trace_dir, "04_validation_fallback.json", fallback)
         return _to_validation_response(fallback)

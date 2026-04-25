@@ -19,6 +19,7 @@ class SaveTripRequest(BaseModel):
     travelers: int = 1
     dates: Optional[str] = None
     status: str = "upcoming"
+    thumbnail_url: Optional[str] = None
 
 
 class UpdateTripRequest(BaseModel):
