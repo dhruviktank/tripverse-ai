@@ -12,9 +12,9 @@ from utils import calculate_trip_duration, select_first_destination
 class TripPlanningInput:
     trip_description: str
     duration_days: int
-    preferences: list[str]
+    preferences: list[str] | None
     source: LocationPoint | None
-    destinations: list[LocationPoint]
+    destinations: list[LocationPoint] | None
     budget: str
     pace: str
 
