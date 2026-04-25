@@ -78,7 +78,12 @@ export default function Home() {
           </div>
 
           <div className="rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-[0_30px_70px_-34px_rgba(53,37,205,0.55)] backdrop-blur-xl">
-            <div className="h-[360px] rounded-[1.4rem] bg-[linear-gradient(145deg,#fab352,#d9751f)] p-6 text-white sm:h-[430px]">
+           <div
+              className="h-[360px] rounded-[1.4rem] bg-cover bg-center p-6 text-white sm:h-[430px]"
+              style={{
+                backgroundImage: "url('/landing/sunset.jpg')",
+              }}
+            >
               <div className="flex justify-end">
                 <span className="rounded-full bg-white/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                   AI Recommended
@@ -112,7 +117,12 @@ export default function Home() {
                   <p className="text-sm font-bold text-[var(--primary)]">AI Smart Itinerary</p>
                   <p className="mt-2 text-sm text-[var(--on-surface-variant)]">{featureCards[0].body}</p>
                 </div>
-                <div className="h-48 rounded-2xl bg-[linear-gradient(145deg,#7ca7d4,#3d668f)]" />
+                <div className="h-48 rounded-2xl" 
+                  style={{
+                    backgroundImage: "url('/landing/hiking.jpg')",
+                    backgroundPosition: "center",
+                    backgroundSize: "cover"
+                  }}/>
               </div>
             </article>
 

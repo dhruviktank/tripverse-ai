@@ -16,6 +16,7 @@ export type TripPlanDay = {
   afternoon?: TripPlanActivity[];
   evening?: TripPlanActivity[];
   notes?: string[];
+  thumbnail_url?: string;
 };
 
 export type TripPlanSection = {
@@ -263,6 +264,20 @@ export default function TripPlanViewer({
                 className="overflow-hidden rounded-3xl border border-[var(--outline-variant)] bg-white shadow-[0_14px_35px_-26px_rgba(53,37,205,0.35)]"
               >
                 <div className="flex items-center gap-4 border-b border-[var(--outline-variant)] bg-[var(--surface-container-low)] px-5 py-4">
+                  {/* Background image (only if exists) */}
+                  {day.thumbnail_url && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center opacity-30"
+                      style={{
+                        backgroundImage: `url('${day.thumbnail_url}')`,
+                      }}
+                    />
+                  )}
+
+                  {/* Optional overlay for readability */}
+                  {/* {day.thumbnail_url && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/60 to-white/90" />
+                  )} */}
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-lg font-bold text-white">
                     {day.day ?? index + 1}
                   </div>

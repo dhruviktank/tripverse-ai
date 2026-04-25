@@ -142,9 +142,17 @@ export default function HistoryPage() {
               >
                 <div
                   className="h-32 rounded-t-3xl"
-                  style={{
-                    background: cardGradients[index % cardGradients.length],
-                  }}
+                  style={
+                    trip.thumbnail_url
+                      ? {
+                          backgroundImage: `url('${trip.thumbnail_url}')`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center'
+                        }
+                      : {
+                          background: cardGradients[(trip.id?.length || 0) % cardGradients.length],
+                        }
+                  }
                 />
                 <div className="p-4">
                   <p className="inline-flex rounded-full bg-[var(--primary-fixed)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">

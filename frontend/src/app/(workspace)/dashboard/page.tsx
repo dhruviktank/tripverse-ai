@@ -95,7 +95,16 @@ export default function DashboardPage() {
         <>
           {/* AI Recommendation + Quick Stats */}
           <section className="grid gap-6 md:grid-cols-12">
-            <article className="relative overflow-hidden rounded-3xl border border-indigo-200/40 bg-[linear-gradient(145deg,#4f46e5,#2f23bd)] p-7 text-white shadow-[0_24px_60px_-35px_rgba(53,37,205,0.7)] md:col-span-8">
+            <article className="relative overflow-hidden rounded-3xl border border-indigo-200/40 p-7 text-white shadow-[0_24px_60px_-35px_rgba(53,37,205,0.7)] md:col-span-8">
+              <div
+                className="absolute -z-10 inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: "url('/dashboard/palms.jpg')",
+                }}
+              />
+
+              {/* Blue overlay */}
+              <div className="absolute -z-10 inset-0 bg-blue-600/40" />
               <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl" />
               <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase">
                 AI Recommendation
@@ -185,9 +194,17 @@ export default function DashboardPage() {
                   >
                     <div
                       className="mb-4 h-36 rounded-2xl"
-                      style={{
-                        background: cardGradients[idx % cardGradients.length],
-                      }}
+                      style={
+                        trip.thumbnail_url
+                          ? {
+                              backgroundImage: `url('${trip.thumbnail_url}')`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center'
+                            }
+                          : {
+                              background: cardGradients[idx % cardGradients.length],
+                            }
+                      }
                     />
                     <p className="inline-flex rounded-full bg-[var(--secondary-container)]/40 px-3 py-1 text-xs font-semibold text-[var(--on-secondary-container)]">
                       {trip.status}
