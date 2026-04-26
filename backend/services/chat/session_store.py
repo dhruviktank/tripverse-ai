@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
-
+from datetime import UTC, timedelta
 from schemas.chat import ConversationContext, Message
 
 
@@ -73,7 +73,7 @@ class InMemorySessionStore(BaseSessionStore):
         session = self.sessions[session_id]
 
         # Check TTL
-        if datetime.utcnow() > session["expires_at"]:
+        if datetime.now(UTC) > session["expires_at"]:
             del self.sessions[session_id]
             return None
 
@@ -86,8 +86,8 @@ class InMemorySessionStore(BaseSessionStore):
             "user_id": user_id,
             "messages": [],
             "context": ConversationContext(),
-            "created_at": datetime.utcnow(),
-            "expires_at": datetime.utcnow() + self.ttl,
+            "created_at": datetime.now(UTC),
+            "expires_at": datetime.now(UTC) + self.ttl,
         }
         self.sessions[session_id] = session
         return session
@@ -104,7 +104,7 @@ class InMemorySessionStore(BaseSessionStore):
         session["messages"].append(message.model_dump())
 
         # Update expiration
-        session["expires_at"] = datetime.utcnow() + self.ttl
+        session["expires_at"] = datetime.now(UTC) + self.ttl
 
     async def get_messages(self, session_id: str, limit: int = 10) -> List[Message]:
         """Get recent messages from session."""
@@ -123,7 +123,7 @@ class InMemorySessionStore(BaseSessionStore):
             session = self.sessions[session_id]
 
         session["context"] = context.model_dump()
-        session["expires_at"] = datetime.utcnow() + self.ttl
+        session["expires_at"] = datetime.now(UTC) + self.ttl
 
     async def get_context(self, session_id: str) -> Optional[ConversationContext]:
         """Get extracted context for session."""

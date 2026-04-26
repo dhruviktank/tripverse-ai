@@ -98,7 +98,7 @@ class SearchService:
         payload = {"q": query, "num": max_results}
         async with httpx.AsyncClient(timeout=self.request_timeout) as client:
             response = await client.post("https://google.serper.dev/search", headers=headers, json=payload)
-            response.raise_for_status()
+            await response.raise_for_status()
             data = response.json()
 
         results = []

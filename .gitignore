@@ -50,3 +50,6 @@ next-env.d.ts
 
 # backend/debug_traces/*
 backend/debug_traces
+
+documents
+Design

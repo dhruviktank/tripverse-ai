@@ -2,8 +2,7 @@
 
 from functools import lru_cache
 
-from pydantic_settings import BaseSettings
-
+from pydantic_settings import SettingsConfigDict, BaseSettings
 
 class Settings(BaseSettings):
     """Application settings and configuration."""
@@ -45,10 +44,11 @@ class Settings(BaseSettings):
     request_timeout: int = 120
     planning_debug_root: str = "debug_traces"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
 
 
 @lru_cache()

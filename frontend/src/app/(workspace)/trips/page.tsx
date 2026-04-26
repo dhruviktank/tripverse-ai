@@ -14,6 +14,7 @@ interface TimelineDay {
     name: string;
     details: string;
   }>;
+  thumbnailUrl: string;
 }
 
 function normalizeSectionItems(
@@ -63,6 +64,7 @@ function parseItineraryToTimeline(
             details: "See full details in itinerary view",
           },
         ],
+        thumbnailUrl: "",
       }));
     }
   }
@@ -79,6 +81,7 @@ function parseItineraryToTimeline(
       ...normalizeSectionItems(day.evening).map((item) => ({ ...item, time: item.time || "Evening" })),
       ...normalizeSectionItems(day.notes).map((item) => ({ ...item, time: item.time || "Notes", type: "Note" })),
     ],
+    thumbnailUrl: day.thumbnail_url ?? "",
   }));
 }
 
@@ -198,10 +201,11 @@ export default function TripsPage() {
 
                 <article className="overflow-hidden rounded-3xl border border-[var(--outline-variant)] bg-white shadow-[0_15px_40px_-30px_rgba(53,37,205,0.45)]">
                   <div
-                    className="h-48"
+                    className={day.thumbnailUrl ? "h-64" : "h-24"}
                     style={{
-                      background:
-                        i === 0
+                      background: day.thumbnailUrl
+                        ? `url(${day.thumbnailUrl}) center/cover no-repeat`
+                        : i === 0
                           ? "linear-gradient(135deg,#5fb3ff,#1f69cb)"
                           : i === 1
                             ? "linear-gradient(135deg,#4999d3,#2f6aa8)"
