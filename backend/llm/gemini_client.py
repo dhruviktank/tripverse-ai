@@ -73,7 +73,7 @@ class GeminiClient(BaseLLMClient):
     async def generate(self, prompt: str, system_prompt: Optional[str] = None, **kwargs) -> str:
         messages: List[BaseMessage] = []
         if system_prompt:
-            if self.model == "gemma-3-27b-it":
+            if self.model == "gemini-2.5-flash":
                 prompt = f"{system_prompt}\n\n{prompt}"
             else:
                 messages.append(SystemMessage(content=system_prompt))
@@ -95,7 +95,7 @@ class GeminiClient(BaseLLMClient):
     async def stream_generate(self, prompt: str, system_prompt: Optional[str] = None, **kwargs):
         messages: List[BaseMessage] = []
         if system_prompt:
-            if self.model == "gemma-3-27b-it":
+            if self.model == "gemini-2.5-flash":
                 prompt = f"{system_prompt}\n\n{prompt}"
             else:
                 messages.append(SystemMessage(content=system_prompt))
